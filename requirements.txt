@@ -1,0 +1,7 @@
+click
+matplotlib
+numpy
+python-dotenv
+torch
+torchvision
+pipreqs
