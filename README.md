@@ -2,6 +2,22 @@
 https://arxiv.org/pdf/2102.08427.pdf
 
 
+# Data Set (Deep Globe Patches)
+
+Die Data-Pipeline für DeepGlobe ist unter `data_pipeline/deepglobe/patch_sampling.py` ausführbar:
+
+Zuvor muss nur das Deepglobe Datenset heruntergeladen werden und in das Verzeichnis `data/deepglobe` entpackt werden.
+
+Die Patches der Bilder werden mit ihren korrespondierenden Labels zusammen als einzelne lmdb files gespeichert:
+
+`data/deepglobe_patches/[ml_type]/[sample_id]/[patch_index]`
+
+Das Format des Value Strings (pickeled) ist hierbei für jedes lmbd file immer:
+
+`(x_start, y_start, img, img_label)`
+
+
+
 # Helpful TU Links
 • Kai notebook https://docs.kai-tub.tech/ben-docs/00_intro.html
 
