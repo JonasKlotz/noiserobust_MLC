@@ -31,7 +31,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer,schedule
         test_loss = test_loss/len(test_data._src_insts)
         print('B : '+str(test_loss))
 
-        test_metrics = evals.compute_all_metrics(all_predictions,all_targets,0,opt,elapsed,all_metrics=True)
+        test_metrics = evals.compute_all_metrics(all_predictions, all_targets, 0, opt, elapsed, all_metrics=True)
 
         return
 
@@ -57,7 +57,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer,schedule
         #if 'reuters' in opt.dataset or 'bibtext' in opt.dataset:
         #   torch.save(all_predictions,path.join(opt.model_name,'epochs','train_preds'+str(epoch_i+1)+'.pt'))
         #   torch.save(all_targets,path.join(opt.model_name,'epochs','train_targets'+str(epoch_i+1)+'.pt'))
-        train_metrics = evals.compute_metrics(all_predictions,all_targets,0,opt,elapsed,all_metrics=True)  
+        train_metrics = evals.compute_metrics(all_predictions, all_targets, 0, opt, elapsed, all_metrics=True)
         #train_metrics = evals.compute_all_metrics(all_predictions,all_targets,0,opt,elapsed,all_metrics=True)
 
         ################################### VALID ###################################
@@ -73,7 +73,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer,schedule
 
         #torch.save(all_predictions,path.join(opt.model_name,'epochs','valid_preds'+str(epoch_i+1)+'.pt'))
         #torch.save(all_targets,path.join(opt.model_name,'epochs','valid_targets'+str(epoch_i+1)+'.pt'))
-        valid_metrics = evals.compute_all_metrics(all_predictions,all_targets,0,opt,elapsed,all_metrics=True)
+        valid_metrics = evals.compute_all_metrics(all_predictions, all_targets, 0, opt, elapsed, all_metrics=True)
         valid_maf1 = valid_metrics['maF1']
         valid_ebf1 = valid_metrics['ebF1']
         valid_mif1 = valid_metrics['miF1']
@@ -104,7 +104,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer,schedule
         
         if not 'test' in opt.model_name and not opt.test_only:
             if not opt.not_save:
-                utils.save_model(opt,epoch_i,model,(valid_ebf1,valid_mif1,valid_maf1),(valid_ebf1s,valid_mif1s,valid_maf1s))
+                utils.save_model(opt, epoch_i, model, (valid_ebf1, valid_mif1, valid_maf1), (valid_ebf1s, valid_mif1s, valid_maf1s))
                 #utils.save_model(opt,epoch_i,model,(valid_maf1,),(valid_maf1s,))
 
         loss_file.write(str(int(epoch_i+1)))

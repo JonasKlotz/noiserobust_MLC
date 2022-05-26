@@ -113,7 +113,7 @@ def main(opt):
     opt.total_num_parameters = int(utils.count_parameters(model))
 
     if opt.load_emb:
-        model = utils.load_embeddings(model,'../../Data/word_embedding_dict.pth')
+        model = utils.load_embeddings(model, '../../Data/word_embedding_dict.pth')
  
     if opt.optim == 'adam':
         optimizer = torch.optim.Adam(model.get_trainable_parameters(),betas=(0.9, 0.999),lr=opt.lr, weight_decay=1e-5)

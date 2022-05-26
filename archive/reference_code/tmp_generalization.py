@@ -65,4 +65,4 @@ if opt.load_pretrained:
     checkpoint = torch.load(opt.model_name+'/model.chkpt')
     model.load_state_dict(checkpoint['model'])
 all_predictions, all_targets, test_loss = test_epoch(model, test_data,opt,data['dict'],'(Testing)')
-test_metrics = evals.compute_all_metrics(all_predictions,all_targets,0,opt,0,all_metrics=True)
+test_metrics = evals.compute_all_metrics(all_predictions, all_targets, 0, opt, 0, all_metrics=True)

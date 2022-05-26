@@ -8,7 +8,7 @@ FROM nvidia/cuda:11.2.1-cudnn8-devel-ubuntu18.04
 
 WORKDIR /
 
-COPY .. ./
+COPY ../.. ./
 # Now the structure looks like this '/usr/app/src/test.py'
 #
 RUN apt-get update

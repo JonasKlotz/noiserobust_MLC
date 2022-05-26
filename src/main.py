@@ -22,7 +22,7 @@ if __name__ == '__main__':
         '--instruction',
         type=str,
         dest="instruction_file_path",
-        default="instructions/basic_instructions.yaml"
+        default="configs/basic_instructions.yaml"
     )
     parser.add_argument(
         "--override_args",

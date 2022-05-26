@@ -33,7 +33,7 @@ RUN chmod 777 /home/user
 ENV CONDA_AUTO_UPDATE_CONDA=false \
     PATH=/home/user/miniconda/bin:$PATH
 
-COPY environment.yml /app/environment.yml
+COPY cluster_instructions/environment.yml /app/environment.yml
 COPY / /app/
 
 #download miniconda and setup

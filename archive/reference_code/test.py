@@ -33,7 +33,7 @@ def test_epoch(model, test_data,opt,data_dict, description):
         
         if opt.binary_relevance:
             if 'resnet' not in opt.encoder:
-                gold_binary = utils.get_gold_binary(gold.data.cpu(),opt.tgt_vocab_size).cuda()
+                gold_binary = utils.get_gold_binary(gold.data.cpu(), opt.tgt_vocab_size).cuda()
             else:
                 gold_binary = tgt[0].cuda()
                 src[0] = src[0].cuda()
