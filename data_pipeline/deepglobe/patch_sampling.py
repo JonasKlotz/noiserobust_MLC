@@ -22,7 +22,7 @@ class Subsampler:
         :return:
         """
 
-        subsamples = self._get_subsamples()
+        subsamples = self.get_subsamples()
 
         for i, subsample in enumerate(subsamples):
             self._save_single_subsample(subsample, str(i))
@@ -49,10 +49,10 @@ class Subsampler:
             value = subsample
             value_dump = pickle.dumps(value)
             # print(len(value_dump))
-            txn.put(key.encode('ascii'), )
+            txn.put(key.encode('ascii'), value_dump)
         env.close()
 
-    def _get_subsamples(self):
+    def get_subsamples(self):
         """
         Creates multiple subsamples from a given image. This is achived by a random sampling approach until finished.
 
@@ -109,27 +109,54 @@ def subsample_whole_dir(dir_path):
     labels_present = ('train' in dir_path)
     print("Files:", len(os.listdir(dir_path)))
 
+    # create the save path if it does not exist
+    save_path = dir_path.replace('deepglobe', 'deepglobe_patches')
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+
+    # open the lmdb environment
+    map_size = (983298 + 1000) * len(os.listdir(dir_path)) * 8
+    env = lmdb.open(save_path, map_size=map_size)
+
     # iterate over all images in dir that are jpg
     for i, filename in enumerate(os.listdir(dir_path)):
-        if filename.endswith('sat.jpg'):
 
-            print(i, filename)
+        # skip the labels files
+        if not filename.endswith('sat.jpg'):
+            continue
 
-            # get full paths for image loading
-            path = dir_path + "/" + filename
-            path_labels = path.replace('sat.jpg', 'mask.png')
+        print(i, filename)
 
-            save_path = path.replace('deepglobe', 'deepglobe_patches').replace('_sat.jpg', '')
+        # get full paths for image loading
+        path = dir_path + "/" + filename
+        path_labels = path.replace('sat.jpg', 'mask.png')
 
-            # load image and labels if exist
-            img = plt.imread(path)
-            img_labels = plt.imread(path_labels) if labels_present else None
+        save_path = path.replace('deepglobe', 'deepglobe_patches').replace('_sat.jpg', '')
 
-            # create subsampler
-            subsampler = Subsampler(img=img, img_labels=img_labels, save_dir=save_path)
+        # load image and labels if exist
+        img = plt.imread(path)
+        img_labels = plt.imread(path_labels) if labels_present else None
 
-            # save subsamples to lmdb
-            subsampler.save_subsamples_to_lmdb()
+        # create subsampler
+        subsampler = Subsampler(img=img, img_labels=img_labels, save_dir=save_path)
+
+        # get subsamples
+        subsamples = subsampler.get_subsamples()
+
+        # save subsamples to lmdb
+        for i, subsample in enumerate(subsamples):
+
+            name = f"{filename}_{i}"
+
+            # create the lmdb transaction
+            with env.begin(write=True) as txn:
+                key = name
+                value_dump = pickle.dumps(subsample)
+                # print(len(value_dump))
+                txn.put(key.encode('ascii'), value_dump)
+
+    # close the lmdb environment
+    env.close()
 
 
 if __name__ == "__main__":
