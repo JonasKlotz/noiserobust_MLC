@@ -26,7 +26,7 @@ class Subsampler:
 
         assert self.labels_img is None or self.labels_img.shape[0] == self.img.shape[0]
 
-    def get_subsamples_from_img(self):
+    def get_img_subsamples(self):
         """
         Creates multiple subsamples from a given image. This is achived by a random sampling approach until finished.
 
@@ -101,6 +101,7 @@ class Subsampler:
 
         return label_names
 
+
 # TODO: agriculture_land_count: 6749 total: 9636
 def subsample_whole_dir(dir_path):
     """
@@ -144,7 +145,7 @@ def subsample_whole_dir(dir_path):
 
         # create subsampler Class to subsample the image and get the subsamples (including labels if available)
         subsampler = Subsampler(img=img, img_labels=img_labels)
-        subsamples = subsampler.get_subsamples_from_img()
+        subsamples = subsampler.get_img_subsamples()
 
         subsample_labels = [subsample['labels'] for subsample in subsamples]
 
