@@ -8,13 +8,13 @@ Die Data-Pipeline für DeepGlobe ist unter `data_pipeline/deepglobe/patch_sampli
 Zuvor muss nur das Deepglobe Datenset heruntergeladen werden und in das Verzeichnis `data/deepglobe` entpackt werden.
 Die Patches der Bilder werden mit ihren korrespondierenden Labels zusammen im LMDB-Format gespeichert:
 
-`data/deepglobe_patches/[ml_type]/`
+`data/deepglobe_patches/[train/test/valid]/`
 
 Das Format des Value Strings ist hierbei für jeden Eintrag immer:
 
-`key: [sample_id]_[patch_index]`
+`key: [sample_id]_[patch_index]` 
 
-`value: (x_start, y_start, img, img_label)`
+`value: dict{'x': [x-coordinate], 'y': [y-coordinate], 'img': [subsample image],'label': [label names present]}`
 
 
 

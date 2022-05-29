@@ -4,55 +4,29 @@ import numpy as np
 import lmdb
 import pickle
 
+LABELS = {
+    '[0. 1. 1.]': 'urban_land',
+    '[1. 1. 0.]': 'agriculture_land',
+    '[1. 0. 1.]': 'rangeland',
+    '[0. 1. 0.]': 'forest_land',
+    '[0. 0. 1.]': 'water',
+    '[1. 1. 1.]': 'barren_land',
+    '[0. 0. 0.]': 'unknown'
+}
+
 
 class Subsampler:
-    def __init__(self, img, img_labels, save_dir, patch_size=256, patches=12):
+    """ Class that is used to create subsamples from a single image, and extract the labels associated """
+
+    def __init__(self, img, img_labels, patch_size=256, patches=12):
         self.img = img
-        self.img_labels = img_labels
-        self.save_path = save_dir
+        self.labels_img = img_labels
         self.size = patch_size
         self.patches = patches
 
-        assert self.img_labels is None or self.img_labels.shape[0] == self.img.shape[0]
+        assert self.labels_img is None or self.labels_img.shape[0] == self.img.shape[0]
 
-    def save_subsamples_to_lmdb(self):
-        """
-        Saves the subsamples to lmdb files.
-
-        :return:
-        """
-
-        subsamples = self.get_subsamples()
-
-        for i, subsample in enumerate(subsamples):
-            self._save_single_subsample(subsample, str(i))
-
-    def _save_single_subsample(self, subsample, name, map_size=983298 + 1000):
-        """
-        Saves the subsamples as lmdb files.
-
-        The map_size is the tested size of one subsample.
-
-        :return:
-        """
-
-        # create the save path if it does not exist
-        if not os.path.exists(self.save_path):
-            os.makedirs(self.save_path)
-
-        # create the lmdb environment
-        env = lmdb.open(os.path.join(self.save_path, name), map_size=map_size)
-
-        # create the lmdb transaction
-        with env.begin(write=True) as txn:
-            key = name
-            value = subsample
-            value_dump = pickle.dumps(value)
-            # print(len(value_dump))
-            txn.put(key.encode('ascii'), value_dump)
-        env.close()
-
-    def get_subsamples(self):
+    def get_subsamples_from_img(self):
         """
         Creates multiple subsamples from a given image. This is achived by a random sampling approach until finished.
 
@@ -61,25 +35,23 @@ class Subsampler:
 
         subsamples_list = []
 
-        # iterate until the number of patches is reached
+        # iterate until the number of correct subsamples is reached
         while len(subsamples_list) < self.patches:
             x = int((self.img.shape[0] - self.size) * np.random.random())
             y = int((self.img.shape[1] - self.size) * np.random.random())
-            # print(x, y)
 
             # check if the subsample would overlap with an already existing subsample
-            for previous_sub in subsamples_list:
-                if previous_sub[0] - self.size <= x <= previous_sub[0] + self.size \
-                        and previous_sub[1] - self.size <= y <= previous_sub[1] + self.size:
-                    # print("Subsample is too close to another subsample")
+            for previous in subsamples_list:
+                is_x_overlap = previous['x'] - self.size <= x <= previous['x'] + self.size
+                is_y_overlap = previous['y'] - self.size <= y <= previous['y'] + self.size
+                if is_x_overlap and is_y_overlap:
                     continue
 
             # if the subsample is valid, add it to the list
             try:
                 subsample = self._get_single_subsample(x, y)
                 subsamples_list.append(subsample)
-            except Exception as e:
-                # print("Invalid subsample", e)
+            except:
                 continue
 
         return subsamples_list
@@ -90,81 +62,121 @@ class Subsampler:
 
         :param x: x coordinate of the start of the subsample
         :param y: y coordinate of the start of the subsample
-        :param size: size of the subsample
         :return: subsample
         """
 
         assert self.img.shape[0] >= self.size + x, "Invalid x coordinate"
         assert self.img.shape[1] >= self.size + y, "Invalid y coordinate"
 
-        # if labels are given, return their subsample as fourth element
-        if self.img_labels is not None:
-            return x, y, self.img[x:x + self.size, y:y + self.size], self.img_labels[x:x + self.size, y:y + self.size]
-        else:
-            return x, y, self.img[x:x + self.size, y:y + self.size],
+        subsample = {'x': x,
+                     'y': y,
+                     'size': self.size,
+                     'img': self.img[x:x + self.size, y:y + self.size]}
 
+        # if labels are available, get the labels from the subsample
+        if self.labels_img is not None:
+            subsample_label_img = self.labels_img[x:x + self.size, y:y + self.size]
+            subsample['labels'] = self._get_labels_from_label_img(subsample_label_img)
 
+        return subsample
+
+    @staticmethod
+    def _get_labels_from_label_img(label_img):
+        """
+        Searches through the label image and returns the names of all labels present.
+
+        returns: list of label names
+        """
+
+        # reshape the label image to a 1D array of pixels
+        label_pixels = label_img.reshape(-1, 3)
+        unique_pixels = np.unique(label_pixels, axis=0)
+
+        # only keep unique labels from the list
+        label_pixels_str = [str(pixel) for pixel in unique_pixels]
+        labels = list(set(label_pixels_str))
+
+        # map the labels to their names
+        label_names = [LABELS[str(label)] for label in labels]
+
+        return label_names
+
+# TODO: agriculture_land_count: 6749 total: 9636
 def subsample_whole_dir(dir_path):
+    """
+    Subsamples all images in a directory (deepglobe/train etc.) and saves all subsamples to one lmdb file.
 
+    :param dir_path: path to the image directory
+    """
+
+    # set the labels present flag if we work on the training set
     labels_present = ('train' in dir_path)
     print("Files:", len(os.listdir(dir_path)))
 
-    # create the save path if it does not exist
+    # create a path to save the lbmdb file to, also inside /data
     save_path = dir_path.replace('deepglobe', 'deepglobe_patches')
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    # open the lmdb environment
-    map_size = (983298 + 1000) * len(os.listdir(dir_path)) * 8
+    # open the lmdb environment, with enough space for all subsamples
+    map_size = (983298 + 1000) * len(os.listdir(dir_path)) * 7
     env = lmdb.open(save_path, map_size=map_size)
 
-    # iterate over all images in dir that are jpg
-    for i, filename in enumerate(os.listdir(dir_path)):
+    # create a list for label analysis
+    all_labels = []
 
-        # skip the labels files
-        if not filename.endswith('sat.jpg'):
-            continue
+    # iterate over all images in the directory that are satelite .jpg images
+    images = [f for f in os.listdir(dir_path) if f.endswith('.jpg')]
+    for subsample_index, img_filename in enumerate(images):
 
-        print(i, filename)
+        print(subsample_index, img_filename)  # debug
 
-        # get full paths for image loading
-        path = dir_path + "/" + filename
+        # get full paths for loading the original and the labels image
+        path = dir_path + "/" + img_filename
         path_labels = path.replace('sat.jpg', 'mask.png')
 
-        save_path = path.replace('deepglobe', 'deepglobe_patches').replace('_sat.jpg', '')
-
-        # load image and labels if exist
+        # load image, and labels if exist
         img = plt.imread(path)
-        img_labels = plt.imread(path_labels) if labels_present else None
+        if labels_present:
+            img_labels = plt.imread(path_labels)
+        else:
+            img_labels = None
 
-        # create subsampler
-        subsampler = Subsampler(img=img, img_labels=img_labels, save_dir=save_path)
+        # create subsampler Class to subsample the image and get the subsamples (including labels if available)
+        subsampler = Subsampler(img=img, img_labels=img_labels)
+        subsamples = subsampler.get_subsamples_from_img()
 
-        # get subsamples
-        subsamples = subsampler.get_subsamples()
+        subsample_labels = [subsample['labels'] for subsample in subsamples]
 
-        # save subsamples to lmdb
-        for i, subsample in enumerate(subsamples):
+        all_labels += subsample_labels
 
-            name = f"{filename}_{i}"
-
-            # create the lmdb transaction
+        # iterate over subsamples and save them as key/value pair to the lmdb file
+        for subsample_index, subsample in enumerate(subsamples):
+            key = f"{img_filename}_{subsample_index}"
+            # save the subsample as byte array to the lmdb file
             with env.begin(write=True) as txn:
-                key = name
-                value_dump = pickle.dumps(subsample)
-                # print(len(value_dump))
-                txn.put(key.encode('ascii'), value_dump)
+                key_bytes = key.encode('ascii')
+                value_bytes = pickle.dumps(subsample)
+                txn.put(key_bytes, value_bytes)
 
-    # close the lmdb environment
-    env.close()
+    env.close()  # close the lmdb file
+
+    # get the percentage of 'agriculture_land' in the labels
+    agriculture_land_count = sum([1 for label in all_labels if 'agriculture_land' in label])
+    print("agriculture_land_count:", agriculture_land_count, 'total:', len(all_labels))
+
+    # save the labels to a file
+    if labels_present:
+        with open(save_path + '/labels.txt', 'w') as f:
+            for labels in all_labels:
+                labels_str = ','.join(labels)
+                f.write(str(labels_str) + '\n')
+
+
+
 
 
 if __name__ == "__main__":
-    subsample_whole_dir(dir_path="data/deepglobe/test")
+    # subsample_whole_dir(dir_path="data/deepglobe/test")
     subsample_whole_dir(dir_path="data/deepglobe/train")
-    subsample_whole_dir(dir_path="data/deepglobe/valid")
-
-
-
-
-
+    # subsample_whole_dir(dir_path="data/deepglobe/valid")
