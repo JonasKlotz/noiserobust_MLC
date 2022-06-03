@@ -1,10 +1,18 @@
 from pathlib import Path
+
+from scipy import spatial
 from simple_downloader import download
 from collections import defaultdict
 import zipfile
 import numpy as np
 import glob
 import os
+
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+
+from sklearn.manifold import TSNE  # this can reduce our big dataset into lesser dimensions
 
 GLOVE_URL = "http://nlp.stanford.edu/data/wordvecs/glove.6B.zip"
 
@@ -134,10 +142,45 @@ class Glove:
                 except OSError as e:
                     print("Error: %s : %s" % (file, e.strerror))
 
+    def find_closest_embeddings(self, embedding):
+        """
+        Given a embedding vector this returns the most close word contained in glove. This can be used to retrieve
+        a "name" for new word for instance created by adding up two old words.
+        :return:
+        """
+        return sorted(self.dictionary.keys(),
+                      key=lambda word: spatial.distance.euclidean(self.dictionary[word], embedding))
+
+    def plot_words(self, words):
+        """
+        Visualizes the distance between the given words
+        :param words: list of words to be plotted
+        :return:
+        """
+        tsne = TSNE(n_components=2, random_state=0, init='pca', learning_rate='auto')
+        n, d =  self.vectors.shape # number of samples, dimensionality
+
+        vectors = np.asarray([self.dictionary[word] for word in words])
+
+        # T-distributed Stochastic Neighbor Embedding.
+        # this learns how to optimally represent the vectors in a 2d space
+
+        Y = tsne.fit_transform(vectors)
+
+        plt.scatter(Y[:, 0], Y[:, 1])
+
+        for label, x, y in zip(words, Y[:, 0], Y[:, 1]):
+            plt.annotate(label, xy=(x, y), xytext=(0, 0), textcoords="offset points")
+        plt.show()
+
 
 if __name__ == '__main__':
-    G = Glove(download=True) # this can take long
-    print(G["nichtdrinne"])
+    G = Glove()  # Download = True can can take long
+    #print(G["nichtdrinne"])
 
     test = ["hi", "big", "nichtdrinne"]
-    print(G[test])
+    king = G["king"]
+    male = G["male"]
+
+    #queen = G.find_closest_embeddings(king-male)
+    G.plot_words(["hi", "hello", "bear"])
