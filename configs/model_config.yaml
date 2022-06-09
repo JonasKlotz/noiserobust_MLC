@@ -1,0 +1,37 @@
+---
+Encoder:
+  name: 'Resnet'
+  pretrained: True
+  output_dimension: 512
+
+Decoder:
+  name: 'graph'
+  n_tgt_vocab: 0
+  n_layers: 2
+  n_head: 8
+  n_head2: 8
+  d_word_vec: 512
+  d_model: 512
+  d_inner_hid: 1024
+  d_k: 64
+  d_v: 64
+  dropout: 0.1
+  dec_dropout: 0.1
+  dec_dropout2: 0.1
+
+Config:
+  proj_share_weight: True
+  embs_share_weight: True
+  encoder: 'selfatt'
+  decoder: 'sa_m'
+  enc_transform: ''
+  onehot: False
+  no_enc_pos_embedding: False
+  no_dec_self_att: False
+  loss: 'ce'
+  label_adj_matrix: None
+  label_mask: None
+  matching_mlp: False
+  graph_conv: False
+  attn_type: 'softmax'
+  int_preds: False

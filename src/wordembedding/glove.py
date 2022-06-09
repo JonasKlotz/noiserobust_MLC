@@ -82,7 +82,7 @@ class Glove:
     def _set_padding_and_unknown(self, padding_vector=None, unknown_vector=None):
         """
         This method resets the vector representation of the padding and for unknown words.
-        Todo: very inenfficient
+        Todo: very inefficient
         :param pad_emb_npa:
         :param unk_emb_npa:
         :return:
@@ -115,7 +115,7 @@ class Glove:
 
     def load_glove(self):
         """
-        loads glove weights from NPY files contained in the data dir
+        loads glove embedding from NPY files contained in the data dir
         :return:
         """
         try:
@@ -129,6 +129,7 @@ class Glove:
     def _clean_directory(self):
         """
         Remove all files that are not the NPY weight files from the data_dir
+
         :return:
         """
         cwd = os.getcwd()
@@ -144,8 +145,9 @@ class Glove:
 
     def find_closest_embeddings(self, embedding):
         """
-        Given a embedding vector this returns the most close word contained in glove. This can be used to retrieve
-        a "name" for new word for instance created by adding up two old words.
+        Given a embedding vector this returns the most close word contained in glove.
+
+        This can be used to retrieve a "name" for new word for instance created by adding up two old words.
         :return:
         """
         return sorted(self.dictionary.keys(),
@@ -175,12 +177,29 @@ class Glove:
 
 
 if __name__ == '__main__':
-    G = Glove()  # Download = True can can take long
-    #print(G["nichtdrinne"])
+    G_dict = Glove()  # Download = True can can take long
+    #print(G_dict["nichtdrinne"])
 
-    test = ["hi", "big", "nichtdrinne"]
-    king = G["king"]
-    male = G["male"]
+    labels = ["urban", "agriculture", "rangeland", "forest", "water", "barren", "unknown"]
+    print(G_dict[labels])
+    #queen = G_dict.find_closest_embeddings(king-male)
+    #G_dict.plot_words(labels)
 
-    #queen = G.find_closest_embeddings(king-male)
-    G.plot_words(["hi", "hello", "bear"])
+
+
+    """   # T-distributed Stochastic Neighbor Embedding.
+            # this learns how to optimally represent the vectors in a 2d space
+            if not self.Y:
+                print("Create Y")
+                self.Y = tsne.fit_transform(vectors)
+                self.Y_dictionary = defaultdict()
+                for i, w in enumerate(self.words):
+                    self.Y_dictionary[w] = self.Y[i]
+                print("Y created")
+                
+            Y = np.asarray([[self.Y_dictionary[label]] for label in words])
+            plt.scatter(Y[:, 0], Y[:, 1])
+    
+            for label, x, y in zip(words, Y[:, 0], Y[:, 1]):
+                plt.annotate(label, xy=(x, y), xytext=(0, 0), textcoords="offset points")
+        plt.show()"""

@@ -1,18 +1,22 @@
 import yaml
 import argparse
 from util.log import create_logger
-
+from model.model import LAMPMultiLabelClassifier
 
 def main(opt):
     instructions = yaml.full_load(open(opt["instruction_file_path"]))
     logger = create_logger(instructions["log_dir"])
+    lamp_config = yaml.full_load(open(opt["model_instructions"]))
 
     logger.log(level=20, msg=f"==== INSTRUCTIONS USED === ")
     logger.log(level=20, msg=instructions)
     logger.log(level=20, msg=f"==== ================= === ")
 
-    # create model
+    # load word embedding matrix
+    word2vec_weights = None
 
+    # create model
+    model = LAMPMultiLabelClassifier(lamp_config=lamp_config, word2vec_weights=word2vec_weights)
     # start training / visualization
 
 
