@@ -1,9 +1,9 @@
 import torch
 
-from encoder import ResnetEncoder
+from model.encoder import ResnetEncoder
 import torch.nn as nn
-from decoder import GraphDecoder
-from lamp.SubLayers import XavierLinear
+from model.decoder import GraphDecoder
+from lamp import XavierLinear
 
 #class LAMPMultiLabelClassifier(pl.LightningModule):
 class LAMPMultiLabelClassifier(nn.Module):
@@ -20,7 +20,9 @@ class LAMPMultiLabelClassifier(nn.Module):
         super().__init__()
         self.config = lamp_config["Config"]
         self.encoder_config = lamp_config["Encoder"]
+        print(f"{self.encoder_config}")
         self.decoder_config = lamp_config["Decoder"]
+        print(f"{self.decoder_config}")
 
         self.onehot = self.config["onehot"]
         self.loss = self.config["loss"]
@@ -31,9 +33,9 @@ class LAMPMultiLabelClassifier(nn.Module):
         self.encoder = ResnetEncoder(self.encoder_config)
 
         # Todo: Code -> Decoder weights(welche?) mit Glove initialisieren
-        self.decoder = GraphDecoder(self.decoder_config["n_tgt_vocab"],  # was ist es?
+        self.decoder = GraphDecoder(self.config["n_tgt_vocab"],  # was ist es?
                                     self.decoder_config["n_max_seq_d"],
-                                    n_layers=self.decoder_config["n_layers_dec"],
+                                    n_layers=self.decoder_config["n_layers"],
                                     n_head=self.decoder_config["n_head"],
                                     n_head2=self.decoder_config["n_head2"],
                                     d_word_vec=self.decoder_config["d_word_vec"],
@@ -46,7 +48,7 @@ class LAMPMultiLabelClassifier(nn.Module):
                                     no_dec_self_att=self.decoder_config["no_dec_self_att"],
                                     label_adj_matrix=self.decoder_config["label_adj_matrix"],
                                     label_mask=self.decoder_config["label_mask"],
-                                    enc_vec=self.decoder_config["self.enc_vec"],
+                                    enc_vec=self.decoder_config["enc_vec"],
                                     graph_conv=self.decoder_config["graph_conv"],
                                     attn_type=self.decoder_config["attn_type"],
                                     word2vec_weights=word2vec_weights)
@@ -58,17 +60,17 @@ class LAMPMultiLabelClassifier(nn.Module):
 
         #
         if self.config["proj_share_weight"]:
-            self.tgt_word_proj = XavierLinear(d_in=self.encoder_config["d_model"],
-                                              d_out=self.encoder_config["n_tgt_vocab"],
+            self.tgt_word_proj = XavierLinear(d_in=self.encoder_config["output_dimension"],
+                                              d_out=self.config["n_tgt_vocab"],
                                               bias=bias)
             self.tgt_word_proj.weight = self.decoder.tgt_word_emb.weight
         else:
-            self.tgt_word_proj = XavierLinear(self.encoder_config["d_model"],
+            self.tgt_word_proj = XavierLinear(self.encoder_config["output_dimension"],
                                               1,
                                               bias=bias)
         if self.config["int_preds"]:
-            self.tgt_word_proj_copy = XavierLinear(d_in=self.encoder_config["d_model"],
-                                                   d_out=self.encoder_config["n_tgt_vocab"],
+            self.tgt_word_proj_copy = XavierLinear(d_in=self.encoder_config["output_dimension"],
+                                                   d_out=self.config["n_tgt_vocab"],
                                                    bias=bias)
 
 

@@ -1,3 +1,4 @@
+import torch
 import torchvision.transforms.functional as F
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,11 +12,13 @@ def show(imgs):
     :param imgs:
     :return:
     """
-    if not isinstance(imgs, list):
-        imgs = [imgs]
+    n_img = imgs.shape[0]
     fix, axs = plt.subplots(ncols=len(imgs), squeeze=False)
-    for i, img in enumerate(imgs):
-        img = img.detach()
-        img = F.to_pil_image(img)
+
+    for i in range (n_img):
+        img= imgs[i,...]
+        if isinstance(img, torch.Tensor):
+            img = img.permute(1, 2, 0)
         axs[0, i].imshow(np.asarray(img))
         axs[0, i].set(xticklabels=[], yticklabels=[], xticks=[], yticks=[])
+    plt.show()

@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 
 from lamp import utils
-from lamp.Layers import DecoderLayer
+from lamp import DecoderLayer
 
 
 # LAMP Graph decoder with initialization for wordvector

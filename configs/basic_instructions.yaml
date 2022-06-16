@@ -1,3 +1,4 @@
 ---
 data_dir: "data/dataset"
 log_dir: "logs"
+model_instructions: "../configs/model_config.yaml"

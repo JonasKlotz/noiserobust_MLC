@@ -1,6 +1,9 @@
 # Evaluating Multi-label Classifiers with Noisy Labels
 https://arxiv.org/pdf/2102.08427.pdf
 
+# Run Example
+
+python main.py -dataset cars -batch_size 32 -d_model 300 -d_inner_hid 512 -n_layers_enc 2 -n_layers_dec 2 -n_head 4 -epoch 5 -dropout 0.2 -dec_dropout 0.2 -lr 0.0002 -encoder resnet -decoder graph -label_mask prior
 
 # Data Set (Deep Globe Patches)
 
