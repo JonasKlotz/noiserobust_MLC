@@ -10,9 +10,12 @@ import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from PIL import Image
 from torchvision import datasets, transforms, models
+from pathlib import Path
 
 download = False
-data_dir = "../data/cars/"
+data_dir = str(Path(__file__).parent.parent.parent) + "/data/cars/"
+print(f"load data from {data_dir}")
+
 
 def getting_data(url, path):
     file_name = "car_imgs.tgz"
@@ -95,6 +98,7 @@ class CarDataset(Dataset):
         self.folder = [x for x in listdir(car_path)]
         self.transform = transform
         self.translation_dict = translation_dict
+
     def __len__(self):
         return len(self.folder)
 
@@ -109,13 +113,12 @@ class CarDataset(Dataset):
 
         label_tensor = torch.stack((label1, label2, label3), dim=1)
 
-        sample = {'image':single_img,
+        sample = {'image': single_img,
                   'labels': label_tensor}
         return sample
 
 
 def load_cars_dataset():
-
     if download:
         getting_data("http://ai.stanford.edu/~jkrause/car196/car_ims.tgz",
                      data_dir + "carimages")
@@ -127,7 +130,6 @@ def load_cars_dataset():
 
     results, file_names, translated_car_names = MetaParsing(data_dir + "car_metadata.mat",
                                                             brand_dict, vehicle_types_dict, year=2009).parsing()
-
 
     count_classes(brand_dict, results[0])
     count_classes(vehicle_types_dict, results[1])

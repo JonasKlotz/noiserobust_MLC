@@ -19,7 +19,7 @@ class LAMP(nn.Module):
                  d_inner_hid=1024, d_k=64, d_v=64, dec_dropout=0.1, dec_dropout2=0.1, proj_share_weight=True,
                  encoder='selfatt', decoder='sa_m', enc_transform='', onehot=False,
                  no_dec_self_att=False, loss='ce', label_adj_matrix=None, label_mask=None, graph_conv=False,
-                 attn_type='softmax', int_preds=False):
+                 attn_type='softmax', int_preds=False, word2vec_weights: torch.FloatTensor = None, freeze_emb=False):
         """
 
         @param n_tgt_vocab:
@@ -62,15 +62,15 @@ class LAMP(nn.Module):
         self.encoder = RESNETEncoder(d_model=d_model)
 
         ############# Decoder ###########
-        if decoder == 'graph':
-            self.decoder = GraphDecoder(
-                n_tgt_vocab, n_layers=n_layers_dec, n_head=n_head,
-                n_head2=n_head2, d_word_vec=d_word_vec, d_model=d_model, d_k=d_k, d_v=d_v,
-                d_inner_hid=d_inner_hid, dropout=dec_dropout, dropout2=dec_dropout2,
-                no_dec_self_att=no_dec_self_att, label_adj_matrix=label_adj_matrix,
-                label_mask=label_mask, enc_vec=self.enc_vec, attn_type=attn_type)
-        else:
-            raise NotImplementedError
+
+        self.decoder = GraphDecoder(
+            n_tgt_vocab, n_layers=n_layers_dec, n_head=n_head,
+            n_head2=n_head2, d_word_vec=d_word_vec, d_model=d_model, d_k=d_k, d_v=d_v,
+            d_inner_hid=d_inner_hid, dropout=dec_dropout, dropout2=dec_dropout2,
+            no_dec_self_att=no_dec_self_att, label_adj_matrix=label_adj_matrix,
+            label_mask=label_mask, enc_vec=self.enc_vec, attn_type=attn_type, word2vec_weights=word2vec_weights,
+            freeze_emb=freeze_emb)
+
 
         bias = False
         if self.decoder_type in ['graph'] and not proj_share_weight:
