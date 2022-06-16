@@ -1,3 +1,7 @@
 /logs/
 __pycache__
 .idea
+/archive/
+/src/logs/
+/src/results/
+/data/

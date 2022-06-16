@@ -8,7 +8,7 @@
 import torch
 import numpy as np
 import lamp.Constants as Constants
-from pdb import set_trace as stop
+
 
 class Beam(object):
     ''' Store the neccesary info for beam search. '''
