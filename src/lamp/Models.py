@@ -15,77 +15,71 @@ import copy
 
 
 class LAMP(nn.Module):
-    def __init__(self, n_tgt_vocab, n_max_seq_d, n_layers_dec=6, n_head=8, n_head2=8, d_word_vec=512, d_model=512,
+    """def __init__(self, n_tgt_vocab, n_max_seq_d, n_layers_dec=6, n_head=8, n_head2=8, d_word_vec=512, d_model=512,
                  d_inner_hid=1024, d_k=64, d_v=64, dec_dropout=0.1, dec_dropout2=0.1, proj_share_weight=True,
                  encoder='selfatt', decoder='sa_m', enc_transform='', onehot=False,
                  no_dec_self_att=False, loss='ce', label_adj_matrix=None, label_mask=None, graph_conv=False,
-                 attn_type='softmax', int_preds=False):
-        """
+                 attn_type='softmax', int_preds=False):"""
 
-        @param n_tgt_vocab:
-        @param n_max_seq_d:
-        @param n_layers_dec:
-        @param n_head:
-        @param n_head2:
-        @param d_word_vec:
-        @param d_model:
-        @param d_inner_hid:
-        @param d_k:
-        @param d_v:
-        @param dec_dropout:
-        @param dec_dropout2:
-        @param proj_share_weight:
-        @param encoder:
-        @param decoder:
-        @param enc_transform:
-        @param onehot:
-        @param no_dec_self_att:
-        @param loss:
-        @param label_adj_matrix: This matrix contains the graph edges in out case a full matrix
-        @param label_mask:
-        @param graph_conv:
-        @param attn_type:
-        @param int_preds:
+    def __init__(self, lamp_config: dict, word2vec_weights=None, **kwargs):
+        """
         """
 
         super(LAMP, self).__init__()
-        self.decoder_type = decoder
-        self.onehot = onehot
-        self.loss = loss
+        self.config = lamp_config["Config"]
+        self.encoder_config = lamp_config["Encoder"]
+        print(f"{self.encoder_config}")
+        self.decoder_config = lamp_config["Decoder"]
+        print(f"{self.decoder_config}")
 
-        self.enc_vec = False
-        if encoder == 'mlp' or enc_transform != '':
+        self.onehot = self.config["onehot"]
+        self.loss = self.config["loss"]
+        self.enc_vec = False  # kp was das sein soll?
+        if self.config["enc_transform"] != '':
             self.enc_vec = True
 
         ############# Encoder ###########
 
-        self.encoder = RESNETEncoder(d_model=d_model)
+        self.encoder = RESNETEncoder(d_model=self.encoder_config["d_model"])
 
         ############# Decoder ###########
-        if decoder == 'graph':
-            self.decoder = GraphDecoder(
-                n_tgt_vocab, n_layers=n_layers_dec, n_head=n_head,
-                n_head2=n_head2, d_word_vec=d_word_vec, d_model=d_model, d_k=d_k, d_v=d_v,
-                d_inner_hid=d_inner_hid, dropout=dec_dropout, dropout2=dec_dropout2,
-                no_dec_self_att=no_dec_self_att, label_adj_matrix=label_adj_matrix,
-                label_mask=label_mask, enc_vec=self.enc_vec, attn_type=attn_type)
-        else:
-            raise NotImplementedError
+        self.decoder = GraphDecoder(self.config["n_tgt_vocab"],  # was ist es?
+                                    n_layers=self.decoder_config["n_layers"],
+                                    n_head=self.decoder_config["n_head"],
+                                    n_head2=self.decoder_config["n_head2"],
+                                    d_word_vec=self.decoder_config["d_word_vec"],
+                                    d_model=self.decoder_config["d_model"],
+                                    d_k=self.decoder_config["d_k"],
+                                    d_v=self.decoder_config["d_v"],
+                                    d_inner_hid=self.decoder_config["d_inner_hid"],
+                                    dropout=self.decoder_config["dec_dropout"],
+                                    dropout2=self.decoder_config["dec_dropout2"],
+                                    no_dec_self_att=self.decoder_config["no_dec_self_att"],
+                                    label_adj_matrix=self.decoder_config["label_adj_matrix"],
+                                    label_mask=self.decoder_config["label_mask"],
+                                    enc_vec=self.decoder_config["enc_vec"],
+                                    attn_type=self.decoder_config["attn_type"],
+                                    word2vec_weights=word2vec_weights)
 
         bias = False
-        if self.decoder_type in ['graph'] and not proj_share_weight:
+        if not self.config["proj_share_weight"]:
             bias = True
 
-        assert d_model == d_word_vec
+        assert self.decoder_config["d_model"] == self.decoder_config["d_word_vec"]
+        # FOR our LAMP these have to be the dim of the w2v utput glove dimension (300)
 
-        if self.decoder_type != 'mlp':
-            if proj_share_weight:
-                self.tgt_word_proj = XavierLinear(d_model, n_tgt_vocab, bias=bias)
-                self.tgt_word_proj.weight = self.decoder.tgt_word_emb.weight
-            else:
-                self.tgt_word_proj = XavierLinear(d_model, 1, bias=bias)
-            if int_preds:
-                self.tgt_word_proj_copy = XavierLinear(d_model, n_tgt_vocab, bias=bias)
+
+        if  self.config["proj_share_weight"]:
+            self.tgt_word_proj = XavierLinear(self.decoder_config["d_model"],
+                                              self.config["n_tgt_vocab"], bias=bias)
+            self.tgt_word_proj.weight = self.decoder.tgt_word_emb.weight
+
+        else:
+            self.tgt_word_proj = XavierLinear(self.decoder_config["d_model"], 1, bias=bias)
+
+        if self.config["int_preds"]:
+            self.tgt_word_proj_copy = XavierLinear(self.decoder_config["d_model"],
+                                                   self.config["n_tgt_vocab"], bias=bias)
 
     def get_trainable_parameters(self):
         ''' Avoid updating the position encoding '''

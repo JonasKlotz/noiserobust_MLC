@@ -19,7 +19,6 @@ def read_adj_matrix(inst_file):
 
     return word_insts
 
-
 def read_instances_from_file(inst_file, max_sent_len, keep_case, use_bos_eos=True):
     ''' Convert file into word seq lists and vocab '''
 

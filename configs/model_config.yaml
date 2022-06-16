@@ -38,3 +38,4 @@ Config:
   matching_mlp: False
   int_preds: False
   n_tgt_vocab: 2
+  max_ar_length:30

@@ -3,7 +3,7 @@ import torch
 from model.encoder import ResnetEncoder
 import torch.nn as nn
 from model.decoder import GraphDecoder
-from lamp import XavierLinear
+from lamp.SubLayers import XavierLinear
 
 #class LAMPMultiLabelClassifier(pl.LightningModule):
 class LAMPMultiLabelClassifier(nn.Module):

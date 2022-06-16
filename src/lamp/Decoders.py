@@ -10,7 +10,7 @@ class GraphDecoder(nn.Module):
             self, n_tgt_vocab, n_layers=6, n_head=8, n_head2=8, d_k=64, d_v=64,
             d_word_vec=512, d_model=512, d_inner_hid=1024, dropout=0.1, dropout2=0.1,
             no_dec_self_att=False, label_adj_matrix=None, label_mask=None,
-            enc_vec=True, attn_type='softmax'):
+            enc_vec=True, attn_type='softmax', word2vec_weights=None):
 
         super(GraphDecoder, self).__init__()
         self.enc_vec = enc_vec
