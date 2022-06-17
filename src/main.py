@@ -4,6 +4,8 @@ from data_pipeline import cars_data_loader
 import utils.utils as utils
 from data_pipeline.data_loader import process_data
 import torch, torch.nn as nn
+
+from data_pipeline.lmdb_dataloader import load_data
 from lamp.Models import LAMP
 from config_args import config_args, get_args
 from runner import run_model
@@ -21,13 +23,16 @@ def main(opt):
     # ========= Loading Dataset =========#
 
     #these have to be refactored
-    train_data, valid_data = cars_data_loader.load_cars_dataset()
-
-    label_adj_matrix = torch.ones(3, 3)  # full graph
-    opt.tgt_vocab_size = 3  # number of labels
+    #train_data, valid_data = cars_data_loader.load_cars_dataset()
+    #opt.tgt_vocab_size = 3  # number of labels
     opt.max_token_seq_len_d = opt.max_ar_length
+
+    train_data, valid_data, labels = load_data()
+    opt.tgt_vocab_size = len(labels)  # number of labels
     # create a random weight matric as its not loaded with glove yet
-    weights_matrix = torch.FloatTensor(np.random.normal(scale=0.6, size=(3, opt.d_model)))
+    label_adj_matrix = torch.ones(opt.tgt_vocab_size, opt.tgt_vocab_size)  # full graph
+
+    weights_matrix = torch.FloatTensor(np.random.normal(scale=0.6, size=(opt.tgt_vocab_size, opt.d_model)))
 
     # ========= Preparing Model =========#
     model = LAMP(opt.tgt_vocab_size, opt.max_token_seq_len_d, n_layers_dec=opt.n_layers_dec, n_head=opt.n_head,
