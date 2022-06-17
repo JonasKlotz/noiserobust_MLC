@@ -4,6 +4,8 @@ import numpy as np
 import lmdb
 import pickle
 
+np.random.seed(42)
+
 LABELS = {
     '[0. 1. 1.]': 'urban_land',
     '[1. 1. 0.]': 'agriculture_land',
@@ -13,7 +15,6 @@ LABELS = {
     '[1. 1. 1.]': 'barren_land',
     '[0. 0. 0.]': 'unknown'
 }
-
 
 class Subsampler:
     """ Class that is used to create subsamples from a single image, and extract the labels associated """
@@ -178,6 +179,7 @@ def subsample_whole_dir(dir_path):
 
 
 if __name__ == "__main__":
+    path = "home/jonasklotz/private-git/remotesensing/"
     # subsample_whole_dir(dir_path="data/deepglobe/test")
-    subsample_whole_dir(dir_path="data/deepglobe/train")
-    # subsample_whole_dir(dir_path="data/deepglobe/valid")
+    #subsample_whole_dir(dir_path="data/deepglobe/train")
+    subsample_whole_dir(dir_path="data/deepglobe/valid")
