@@ -152,9 +152,10 @@ def subsample_whole_dir(dir_path):
 
         all_labels += subsample_labels
 
-        # iterate over subsamples and save them as key/value pair to the lmdb file
+        # iterate over subsamples and save them as key/value pair to the lmdb file, where the key is an overall index
         for subsample_index, subsample in enumerate(subsamples):
             key = f"{img_filename}_{subsample_index}"
+
             # save the subsample as byte array to the lmdb file
             with env.begin(write=True) as txn:
                 key_bytes = key.encode('ascii')
