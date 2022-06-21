@@ -1,3 +1,5 @@
+import pickle
+
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
@@ -33,7 +35,8 @@ class LMDBLoader(Dataset):
         self.txn = self.env.begin()
         # get all keys and the overall length of the dataset
         self.len = self.txn.stat()['entries']
-        self.keys = [key for key, _ in self.txn.cursor()]
+        self.keys = [key.decode('ascii') for key, _ in self.txn.cursor()]
+        print(f"LMDB Initialized with Len:{self.len}")
 
     def __len__(self):
         if self.len is None:
@@ -46,13 +49,26 @@ class LMDBLoader(Dataset):
             self._init_db()
 
         key = self.keys[idx]
-        value = self.txn.get(key, readonly=True, buffers=True)
+        print(key)
+        key_unicode = key.encode()
+        value_data = self.txn.get(key_unicode)
+        value = pickle.loads(value_data)
 
         img = value['img']
-        img = self.transform(img)
-        labels = value['labels']
+        if self.transform:
+            img = self.transform(img)
 
-        return {'image': img, 'labels': labels}
+        # transform image to tensor
+        img = torch.from_numpy(img)
+
+        # get array of onehot encoded labels
+        labels = value['labels']
+        labels_onehot = np.zeros(len(LABELS))
+        for label in labels:
+            labels_onehot[LABELS.index(label)] = 1
+        labels_onehot = torch.from_numpy(labels_onehot)
+
+        return {'image': img, 'labels': labels_onehot, 'labels_string': labels}
 
 
 def load_data(data_dir="data/deepglobe_patches/", transformations=None):
@@ -86,6 +102,12 @@ def load_data(data_dir="data/deepglobe_patches/", transformations=None):
 
 
 if __name__ == '__main__':
+    dataloader = LMDBLoader("data/deepglobe_patches/train", None)
+    for sample in dataloader:
+        print(sample)
+
+
+
     tl, vl, labels = load_data()
     for batch in tqdm(tl, mininterval=0.5, desc='(Training)', leave=False):
         print(batch)

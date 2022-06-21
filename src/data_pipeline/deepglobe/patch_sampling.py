@@ -176,11 +176,28 @@ def subsample_whole_dir(dir_path):
                 f.write(str(labels_str) + '\n')
 
 
+def test_lmdb(path='data/deepglobe_patches/train'):
+    """
+    Test the lmdb file by loading it and printing the first subsample.
+    """
+
+    # load the lmdb file
+    env = lmdb.open(path)
+    txn = env.begin()
+    # print the length of the lmdb file
+    print("Length:", txn.stat()['entries'])
+    # get the keys of the lmdb file decoded
+    keys = [key.decode('ascii') for key, _ in txn.cursor()]
+    print(keys)
+    # get a single subsample
+    value = txn.get(keys[0].encode())
+    subsample = pickle.loads(value)
+    print(subsample)
+
 
 
 
 if __name__ == "__main__":
-    path = "home/jonasklotz/private-git/remotesensing/"
-    # subsample_whole_dir(dir_path="data/deepglobe/test")
-    #subsample_whole_dir(dir_path="data/deepglobe/train")
-    subsample_whole_dir(dir_path="data/deepglobe/valid")
+
+    # subsample_whole_dir(dir_path="data/deepglobe/train")
+    test_lmdb()

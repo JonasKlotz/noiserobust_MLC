@@ -13,12 +13,20 @@ Die Patches der Bilder werden mit ihren korrespondierenden Labels zusammen im LM
 
 `data/deepglobe_patches/[train/test/valid]/`
 
-Das Format des Value Strings ist hierbei für jeden Eintrag immer:
+### LMDB Format
 
 `key: [sample_id]_[patch_index]` 
+(ascii codiert)
 
 `value: dict{'x': [x-coordinate], 'y': [y-coordinate], 'img': [subsample image],'label': [label names present]}`
+(pickeled)
 
+### Dataloader
+
+Dataloader für LMDB Files ist unter `data_pipeline/deepglobe/lmdb_dataloader.py` ausführbar:
+Ist ein Iterable über samples vom Format:
+
+`img: tensor(image), label: tensor(onehot_label), label_string: List of label strings`
 
 
 # Helpful TU Links
