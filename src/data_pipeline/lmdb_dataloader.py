@@ -49,7 +49,7 @@ class LMDBLoader(Dataset):
             self._init_db()
 
         key = self.keys[idx]
-        print(key)
+        #print(key)
         key_unicode = key.encode()
         value_data = self.txn.get(key_unicode)
         value = pickle.loads(value_data)
@@ -59,11 +59,11 @@ class LMDBLoader(Dataset):
             img = self.transform(img)
 
         # transform image to tensor
-        img = torch.from_numpy(img)
+        #img = torch.from_numpy(img) -> done in transformation
 
         # get array of onehot encoded labels
         labels = value['labels']
-        labels_onehot = np.zeros(len(LABELS))
+        labels_onehot = np.zeros(len(LABELS), dtype=np.int64)
         for label in labels:
             labels_onehot[LABELS.index(label)] = 1
         labels_onehot = torch.from_numpy(labels_onehot)
@@ -71,13 +71,14 @@ class LMDBLoader(Dataset):
         return {'image': img, 'labels': labels_onehot, 'labels_string': labels}
 
 
-def load_data(data_dir="data/deepglobe_patches/", transformations=None):
+def load_data(data_dir="/data/deepglobe_patches/", transformations=None):
     # Pre-processing for our images
     # Resizing because images have different sizes by default
     # Converting each image from a numpy array to a tensor (so we can do calculations on the GPU)
     # Normalizing the image as following: image = (image - mean) / std
     if not transformations:
         transformations = transforms.Compose([
+            transforms.ToPILImage(), # to PIL such that it can be converted to tensor
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
@@ -93,9 +94,9 @@ def load_data(data_dir="data/deepglobe_patches/", transformations=None):
     train_set, val_set = torch.utils.data.random_split(trainloader, [train_len, valid_len])
 
     # Create the dataloader for each dataset
-    train_loader = DataLoader(train_set, batch_size=32, shuffle=True,
+    train_loader = DataLoader(train_set, batch_size=1, shuffle=True,
                               num_workers=1, drop_last=True)
-    val_loader = DataLoader(val_set, batch_size=16, shuffle=False,
+    val_loader = DataLoader(val_set, batch_size=1, shuffle=False,
                             num_workers=1, drop_last=True)
 
     return train_loader, val_loader, LABELS
