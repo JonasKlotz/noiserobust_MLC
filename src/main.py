@@ -16,8 +16,7 @@ warnings.filterwarnings("ignore")
 parser = argparse.ArgumentParser()
 args = get_args(parser)
 opt = config_args(args)
-cars = True
-
+from wordembedding.glove import Glove
 
 def main(opt):
     # ========= Loading Dataset =========#
@@ -27,9 +26,9 @@ def main(opt):
     #opt.tgt_vocab_size = 3  # number of labels
     opt.max_token_seq_len_d = opt.max_ar_length
 
-    train_data, valid_data, labels = load_data()
+    train_data, valid_data, test_data, labels = load_data(data_dir="/home/jonasklotz/private-git/remotesensing/data/deepglobe_patches/")
     opt.tgt_vocab_size = len(labels)  # number of labels
-    # create a random weight matric as its not loaded with glove yet
+
     label_adj_matrix = torch.ones(opt.tgt_vocab_size, opt.tgt_vocab_size)  # full graph
 
     weights_matrix = torch.FloatTensor(np.random.normal(scale=0.6, size=(opt.tgt_vocab_size, opt.d_model)))
@@ -76,7 +75,7 @@ def main(opt):
         model.load_state_dict(checkpoint['model'])
 
     try:
-        run_model(model=model, train_data=train_data, valid_data=valid_data, crit=crit, optimizer=optimizer,
+        run_model(model=model, train_data=train_data, test_data= test_data, valid_data=valid_data, crit=crit, optimizer=optimizer,
                   scheduler=scheduler, opt=opt)
 
     except KeyboardInterrupt:

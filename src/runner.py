@@ -8,7 +8,7 @@ from test import test_epoch
 warnings.filterwarnings("ignore")
 
 
-def run_model(model, train_data, valid_data, crit, optimizer, scheduler, opt):
+def run_model(model, train_data, valid_data, test_data, crit, optimizer, scheduler, opt):
     logger = evals.Logger(opt)
 
     valid_losses = []
@@ -36,7 +36,7 @@ def run_model(model, train_data, valid_data, crit, optimizer, scheduler, opt):
         all_predictions, all_targets, valid_loss = test_epoch(model, valid_data, opt, '(Validation)')
         elapsed = ((time.time() - start) / 60)
         print('\n(Validation) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
-        valid_loss = valid_loss / len(valid_data)
+        valid_loss = valid_loss / (valid_data.__len__())
         print('B : ' + str(valid_loss))
 
         torch.save(all_predictions, path.join(opt.model_name, 'epochs', 'valid_preds' + str(epoch_i + 1) + '.pt'))
@@ -44,16 +44,29 @@ def run_model(model, train_data, valid_data, crit, optimizer, scheduler, opt):
         valid_metrics = evals.compute_metrics(all_predictions, all_targets, 0, opt, elapsed, all_metrics=True)
         valid_losses += [valid_loss]
 
-        best_valid, best_test = logger.evaluate_train_vali(train_metrics, valid_metrics, epoch_i,
+        ################################## TEST ###################################
+        start = time.time()
+        all_predictions, all_targets, test_loss = test_epoch(model, test_data, opt, '(Testing)')
+        elapsed = ((time.time() - start) / 60)
+        print('\n(Testing) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
+        test_loss = test_loss / (test_data.__len__())
+        print('B : ' + str(test_loss))
+
+        torch.save(all_predictions, path.join(opt.model_name, 'epochs', 'test_preds' + str(epoch_i + 1) + '.pt'))
+        torch.save(all_targets, path.join(opt.model_name, 'epochs', 'test_targets' + str(epoch_i + 1) + '.pt'))
+        test_metrics = evals.compute_metrics(all_predictions, all_targets, 0, opt, elapsed, all_metrics=True)
+
+        best_valid, best_test = logger.evaluate(train_metrics, valid_metrics, test_metrics, epoch_i,
                                                 opt.total_num_parameters)
+
         print(opt.model_name)
 
         losses.append([epoch_i + 1, train_loss, valid_loss])
 
-        if not 'test' in opt.model_name and not opt.test_only:
-            utils.save_model(opt, epoch_i, model, valid_loss, valid_losses)
+        utils.save_model(opt, epoch_i, model, valid_loss, valid_losses)
 
         loss_file.write(str(int(epoch_i + 1)))
         loss_file.write(',' + str(train_loss))
         loss_file.write(',' + str(valid_loss))
+        loss_file.write(',' + str(test_loss))
         loss_file.write('\n')

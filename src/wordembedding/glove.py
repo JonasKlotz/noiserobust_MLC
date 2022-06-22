@@ -1,7 +1,11 @@
+from __future__ import annotations
+
+import shutil
 from pathlib import Path
 
+import urllib3
 from scipy import spatial
-from simple_downloader import download
+#from simple_downloader import download
 from collections import defaultdict
 import zipfile
 import numpy as np
@@ -22,7 +26,7 @@ class Glove:
     This class loads and processes the weights for a Glove word2vec embedding
     """
 
-    def __init__(self, data_path="./data", download=False, padding_vector=None, unknown_vector=None):
+    def __init__(self, data_path="data/glove",load_from_txt=True, download=False, padding_vector=None, unknown_vector=None):
         """
         Initialize Glove weights from a given path.
         :param download: Initializing with download can take quite some time, as 800 MB have to be downloaded.
@@ -33,6 +37,9 @@ class Glove:
         if download:
             self.words, self.vectors = self.download_glove()
             print(f"loaded GLOVE in {self.data_path}")
+        elif load_from_txt:
+            self.words, self.vectors = self._load_from_text()
+            print(f"loaded GLOVE from txt file {self.data_path}")
         else:
             self.words, self.vectors = self.load_glove()
             print(f"loaded GLOVE from {self.data_path}")
@@ -63,20 +70,26 @@ class Glove:
         download_dir = Path(self.data_path)
         download_dir.mkdir(exist_ok=True)
 
-        output_file = download(GLOVE_URL, download_dir, force=True)
+        output_file = "glove.zip"
+        http = urllib3.PoolManager()
+        with open(output_file, 'wb') as out:
+            r = http.request('GET', GLOVE_URL, preload_content=False)
+            shutil.copyfileobj(r, out)
 
         zipf = zipfile.ZipFile(output_file)
         zipf.extractall(path=self.data_path)
 
+        return self._load_from_text()
+
+    def _load_from_text(self):
         vocab, embeddings = [], []
-        with open(f"{self.data_path}/glove.6B.50d.txt", 'rt') as fi:
+        with open(f"{self.data_path}/glove.42B.300d.txt", 'rt') as fi:
             full_content = fi.read().strip().split('\n')
         for i in range(len(full_content)):
             i_word = full_content[i].split(' ')[0]
             i_embeddings = [float(val) for val in full_content[i].split(' ')[1:]]
             vocab.append(i_word)
             embeddings.append(i_embeddings)
-
         return np.array(vocab), np.array(embeddings)
 
     def _set_padding_and_unknown(self, padding_vector=None, unknown_vector=None):
@@ -181,7 +194,9 @@ if __name__ == '__main__':
     #print(G_dict["nichtdrinne"])
 
     labels = ["urban", "agriculture", "rangeland", "forest", "water", "barren", "unknown"]
-    print(G_dict[labels])
+    res = (G_dict[labels])
+    with open(f'data/glove/labels.npy', 'wb') as f:
+        np.save(f, res)
     #queen = G_dict.find_closest_embeddings(king-male)
     #G_dict.plot_words(labels)
 

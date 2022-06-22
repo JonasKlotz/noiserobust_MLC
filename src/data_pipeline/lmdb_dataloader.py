@@ -85,21 +85,19 @@ def load_data(data_dir="/data/deepglobe_patches/", transformations=None):
         ])
 
     # Getting the data
-    trainloader = LMDBLoader(data_dir+"train", transform=transformations)
-
-    # Split the data in training and testing
-    train_len = int(np.ceil(len(trainloader) * 0.8))
-    valid_len = int(np.floor(len(trainloader) * 0.2))
-
-    train_set, val_set = torch.utils.data.random_split(trainloader, [train_len, valid_len])
+    train_loader = LMDBLoader(data_dir+"train", transform=transformations)
+    val_loader = LMDBLoader(data_dir + "valid", transform=transformations)
+    test_loader = LMDBLoader(data_dir + "test", transform=transformations)
 
     # Create the dataloader for each dataset
-    train_loader = DataLoader(train_set, batch_size=1, shuffle=True,
+    train_loader = DataLoader(train_loader, batch_size=1, shuffle=True,
                               num_workers=1, drop_last=True)
-    val_loader = DataLoader(val_set, batch_size=1, shuffle=False,
+    val_loader = DataLoader(val_loader, batch_size=1, shuffle=False,
+                            num_workers=1, drop_last=True)
+    test_loader = DataLoader(test_loader, batch_size=1, shuffle=False,
                             num_workers=1, drop_last=True)
 
-    return train_loader, val_loader, LABELS
+    return train_loader, val_loader,test_loader, LABELS
 
 
 if __name__ == '__main__':
