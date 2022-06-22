@@ -1,8 +1,6 @@
 import argparse, warnings
 
-from data_pipeline import cars_data_loader
 import utils.utils as utils
-from data_pipeline.data_loader import process_data
 import torch, torch.nn as nn
 
 from data_pipeline.lmdb_dataloader import load_data

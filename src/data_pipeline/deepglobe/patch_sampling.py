@@ -1,3 +1,5 @@
+import time
+
 from matplotlib import pyplot as plt
 import os
 import numpy as np
@@ -25,7 +27,7 @@ class Subsampler:
         self.size = patch_size
         self.patches = patches
 
-        assert self.labels_img is None or self.labels_img.shape[0] == self.img.shape[0]
+        # assert self.labels_img is None or self.labels_img.shape[0] == self.img.shape[0]
 
     def get_img_subsamples(self):
         """
@@ -77,12 +79,12 @@ class Subsampler:
         # if labels are available, get the labels from the subsample
         if self.labels_img is not None:
             subsample_label_img = self.labels_img[x:x + self.size, y:y + self.size]
-            subsample['labels'] = self._get_labels_from_label_img(subsample_label_img)
+            subsample['labels'] = self.get_labels_from_label_img(subsample_label_img)
 
         return subsample
 
     @staticmethod
-    def _get_labels_from_label_img(label_img):
+    def get_labels_from_label_img(label_img):
         """
         Searches through the label image and returns the names of all labels present.
 
@@ -188,11 +190,23 @@ def test_lmdb(path='data/deepglobe_patches/train'):
     print("Length:", txn.stat()['entries'])
     # get the keys of the lmdb file decoded
     keys = [key.decode('ascii') for key, _ in txn.cursor()]
-    print(keys)
+    print(keys[0])
     # get a single subsample
-    value = txn.get(keys[0].encode())
-    subsample = pickle.loads(value)
-    print(subsample)
+    values = [txn.get(key.encode()) for key in keys]
+    print(values[0])
+    values = [pickle.loads(value) for value in values]
+    print(values[0])
+    labels = [value['labels'] for value in values]
+    print(labels[0])
+
+    # store the labels as a text file
+    with open("results/data/deepglobe-patches_labels.txt", 'w') as f:
+        for labels in labels:
+            labels_str = ','.join(labels)
+            f.write(str(labels_str) + '\n')
+
+
+
 
 
 
@@ -200,4 +214,5 @@ def test_lmdb(path='data/deepglobe_patches/train'):
 if __name__ == "__main__":
 
     # subsample_whole_dir(dir_path="data/deepglobe/train")
-    test_lmdb()
+    # test_lmdb()
+    get_labels_from_deepglobe()
