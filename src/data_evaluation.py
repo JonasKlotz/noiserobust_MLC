@@ -51,31 +51,53 @@ def get_class_distribution(txt_path='results/data/deepglobe-patches_labels.txt')
         label_stats['percentage'][label] = count / num_samples
         print(f"{label}: {count}")
 
+    # sum all counts
+    label_stats['total_count'] = sum(label_stats['count'].values())
+    label_stats['avg_classes_present'] = sum(label_stats['percentage'].values())
+    print(f"Total count: {label_stats['total_count']} Avg classes present: {label_stats['avg_classes_present']}")
+
     # save the counts to json
-    with open(f"results/data/deepglobe-patches_stats.json", 'w') as f:
+    with open(txt_path.replace("labels.txt", 'stats.json'), 'w') as f:
         json.dump(label_stats, f)
 
-    # plot the distribution
-    plt.figure(figsize=(10, 7))
-    plt.title("Presence of label classes in dataset")
-    plt.bar(range(len(label_stats['count'])), list(label_stats['count'].values()), align='center')
-    plt.xticks(range(len(label_stats['count'])), list(label_stats['count'].keys()))
-    plt.xlabel("Label Class")
-    plt.ylabel("Count of Images present")
-    plt.show()
-
     # plot the distribution of percentages
-    plt.figure(figsize=(10, 7))
-    plt.title("Presence of label classes in dataset")
+    plt.figure(figsize=(7, 7))
+    plt.title("Presence of label classes in dataset", fontsize=18)
     plt.bar(range(len(label_stats['percentage'])), list(label_stats['percentage'].values()), align='center')
     plt.xticks(range(len(label_stats['percentage'])), list(label_stats['percentage'].keys()))
-    plt.xlabel("Label Class")
-    plt.ylabel("Percentage of Images present")
+    plt.xlabel("Label Class", fontsize=14)
+    plt.ylim(0, 1)
+    plt.ylabel("Percentage of Images present", fontsize=14)
+    # set x-ticks to be rotated and centered
+    plt.xticks(rotation=90, ha='center')
+    # make enough space for the x-ticks
+    plt.subplots_adjust(bottom=0.22)
     plt.show()
+
+
+def plot_pixel_legend():
+    """ Plot the legend for the pixel colors """
+
+    # create a figure with a single subplot
+    plt.figure(figsize=(7, 7))
+    plt.title("Pixel Legend", fontsize=18)
+
+    # create a subplot with with rgb values for each label
+    for label in LABELS.keys():
+        rgb = label.replace('[', '').replace(']', '').split('. ')
+        # convert to ints
+        rgb = [float(rgb_val) for rgb_val in rgb]
+        # plot square of size 1 with the rgb values
+        plt.plot([0, 1], [0, 1], color=rgb, linewidth=1000)
+        plt.title(f"{rgb}")
+        plt.show()
 
 
 
 
 if __name__ == '__main__':
     # get_labels_from_deepglobe()
-    get_class_distribution()
+
+    # get_class_distribution(txt_path='results/data/deepglobe_labels.txt')
+    # get_class_distribution(txt_path='results/data/deepglobe-patches_labels.txt')
+    plot_pixel_legend()

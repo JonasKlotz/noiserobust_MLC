@@ -150,9 +150,9 @@ def subsample_whole_dir(dir_path):
         subsampler = Subsampler(img=img, img_labels=img_labels)
         subsamples = subsampler.get_img_subsamples()
 
-        subsample_labels = [subsample['labels'] for subsample in subsamples]
-
-        all_labels += subsample_labels
+        if labels_present:
+            subsample_labels = [subsample['labels'] for subsample in subsamples]
+            all_labels += subsample_labels
 
         # iterate over subsamples and save them as key/value pair to the lmdb file, where the key is an overall index
         for subsample_index, subsample in enumerate(subsamples):
@@ -213,6 +213,6 @@ def test_lmdb(path='data/deepglobe_patches/train'):
 
 if __name__ == "__main__":
 
-    # subsample_whole_dir(dir_path="data/deepglobe/train")
+    subsample_whole_dir(dir_path="data/deepglobe/valid")
     # test_lmdb()
-    get_labels_from_deepglobe()
+    # get_labels_from_deepglobe()
