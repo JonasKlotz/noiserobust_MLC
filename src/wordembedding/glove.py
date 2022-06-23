@@ -5,7 +5,7 @@ from pathlib import Path
 
 import urllib3
 from scipy import spatial
-#from simple_downloader import download
+# from simple_downloader import download
 from collections import defaultdict
 import zipfile
 import numpy as np
@@ -26,7 +26,8 @@ class Glove:
     This class loads and processes the weights for a Glove word2vec embedding
     """
 
-    def __init__(self, data_path="data/glove",load_from_txt=True, download=False, padding_vector=None, unknown_vector=None):
+    def __init__(self, data_path="data/glove", load_from_txt=True, download=False, padding_vector=None,
+                 unknown_vector=None):
         """
         Initialize Glove weights from a given path.
         :param download: Initializing with download can take quite some time, as 800 MB have to be downloaded.
@@ -173,7 +174,7 @@ class Glove:
         :return:
         """
         tsne = TSNE(n_components=2, random_state=0, init='pca', learning_rate='auto')
-        n, d =  self.vectors.shape # number of samples, dimensionality
+        n, d = self.vectors.shape  # number of samples, dimensionality
 
         vectors = np.asarray([self.dictionary[word] for word in words])
 
@@ -189,32 +190,60 @@ class Glove:
         plt.show()
 
 
+import networkx as nx
+from netgraph import Graph, InteractiveGraph, EditableGraph
+
+def plot_edge_matrix(edge_matrix):
+    G = nx.from_numpy_matrix(edge_matrix)
+    G = nx.relabel_nodes(G, label_mapping)
+
+    elarge = [(u, v) for (u, v, d) in G.edges(data=True) if d["weight"] > 7]
+    esmall = [(u, v) for (u, v, d) in G.edges(data=True) if d["weight"] <= 7]
+
+    pos = nx.circular_layout(G)  # positions for all nodes - seed for reproducibility
+    #pos = nx.kamada_kawai_layout(G)  # positions for all nodes - seed for reproducibility
+    fig = plt.figure(figsize=(10, 10))
+    # nodes
+    nx.draw_networkx_nodes(G, pos, node_size=4000)
+
+    # edges
+    nx.draw_networkx_edges(G, pos, edgelist=elarge, width=4)
+    nx.draw_networkx_edges(
+        G, pos, edgelist=esmall, width=6, alpha=0.5, edge_color="b", style="dashed"
+    )
+
+    # node labels
+    nx.draw_networkx_labels(G, pos, font_size=15, font_family="sans-serif")
+    # edge weight labels
+    edge_labels = nx.get_edge_attributes(G, "weight")
+    nx.draw_networkx_edge_labels(G, pos, edge_labels, font_size=15)
+
+    ax = plt.gca()
+    ax.margins(0.08)
+    plt.axis("off")
+    plt.tight_layout()
+    plt.show()
+    fig.savefig('waka.svg')
+
+
 if __name__ == '__main__':
-    G_dict = Glove()  # Download = True can can take long
-    #print(G_dict["nichtdrinne"])
+    G_dict = Glove(load_from_txt=False)  # Download = True can can take long
+    # print(G_dict["nichtdrinne"])
 
     labels = ["urban", "agriculture", "rangeland", "forest", "water", "barren", "unknown"]
+    label_mapping = {idx: l for idx, l in enumerate(labels)}
+    n = len(labels)
     res = (G_dict[labels])
-    with open(f'data/glove/labels.npy', 'wb') as f:
-        np.save(f, res)
-    #queen = G_dict.find_closest_embeddings(king-male)
-    #G_dict.plot_words(labels)
+    edge_matrix = np.zeros((n, n))
 
+    for i in range(n):
+        for k in range(n):
+            edge_matrix[i, k] = np.linalg.norm(res[i] - res[k])
 
-
-    """   # T-distributed Stochastic Neighbor Embedding.
-            # this learns how to optimally represent the vectors in a 2d space
-            if not self.Y:
-                print("Create Y")
-                self.Y = tsne.fit_transform(vectors)
-                self.Y_dictionary = defaultdict()
-                for i, w in enumerate(self.words):
-                    self.Y_dictionary[w] = self.Y[i]
-                print("Y created")
-                
-            Y = np.asarray([[self.Y_dictionary[label]] for label in words])
-            plt.scatter(Y[:, 0], Y[:, 1])
-    
-            for label, x, y in zip(words, Y[:, 0], Y[:, 1]):
-                plt.annotate(label, xy=(x, y), xytext=(0, 0), textcoords="offset points")
+    edge_matrix = np.round(edge_matrix, 2)
+    plot_edge_matrix(edge_matrix)
+    """
+        G = nx.from_numpy_matrix(edge_matrix)
+        # Create a non-interactive plot:
+        Graph(G)
         plt.show()"""
