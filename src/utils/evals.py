@@ -424,7 +424,7 @@ def compute_metrics(all_predictions, all_targets, loss, args, elapsed, all_metri
     return metrics_dict
 
 
-class Logger:
+class EvalsLogger:
     def __init__(self, args):
         self.model_name = args.model_name
 
@@ -478,61 +478,62 @@ class Logger:
                            'medianAUC': 0, 'meanAUPR': 0, 'medianAUPR': 0, 'meanFDR': 0, 'medianFDR': 0, 'allAUC': None,
                            'allAUPR': None, 'epoch': 0}
 
-    def evaluate_train_vali(self, train_metrics, valid_metrics, epoch, num_params):
+    def evaluate_train_vali(self, train_metrics, valid_metrics, test_metrics=None, epoch=0, num_params=0):
         if self.model_name:
-            # if train_metrics is not None:
-            #     with open(self.file_names['train'],'a') as f:
-            #         f.write(str(epoch)+','+str(train_metrics['loss'])
-            #                           +','+str(train_metrics['ACC'])
-            #                           +','+str(train_metrics['HA'])
-            #                           +','+str(train_metrics['ebF1'])
-            #                           +','+str(train_metrics['miF1'])
-            #                           +','+str(train_metrics['maF1'])
-            #                           +','+str(train_metrics['meanAUC'])
-            #                           +','+str(train_metrics['medianAUC'])
-            #                           +','+str(train_metrics['meanAUPR'])
-            #                           +','+str(train_metrics['medianAUPR'])
-            #                           +','+str(train_metrics['meanFDR'])
-            #                           +','+str(train_metrics['medianFDR'])
-            #                           +','+'{elapse:3.3f}'.format(elapse=train_metrics['time'])
-            #                           +','+str(num_params)
-            #                           +'\n')
+            if train_metrics is not None:
+                with open(self.file_names['train'], 'a') as f:
+                    f.write(str(epoch) + ',' + str(train_metrics['loss'])
+                            + ',' + str(train_metrics['ACC'])
+                            + ',' + str(train_metrics['HA'])
+                            + ',' + str(train_metrics['ebF1'])
+                            + ',' + str(train_metrics['miF1'])
+                            + ',' + str(train_metrics['maF1'])
+                            + ',' + str(train_metrics['meanAUC'])
+                            + ',' + str(train_metrics['medianAUC'])
+                            + ',' + str(train_metrics['meanAUPR'])
+                            + ',' + str(train_metrics['medianAUPR'])
+                            + ',' + str(train_metrics['meanFDR'])
+                            + ',' + str(train_metrics['medianFDR'])
+                            + ',' + '{elapse:3.3f}'.format(elapse=train_metrics['time'])
+                            + ',' + str(num_params)
+                            + '\n')
 
-            # with open(self.file_names['valid'],'a') as f:
-            #     f.write(str(epoch)+','+str(valid_metrics['loss'])
-            #                       +','+str(valid_metrics['ACC'])
-            #                       +','+str(valid_metrics['HA'])
-            #                       +','+str(valid_metrics['ebF1'])
-            #                       +','+str(valid_metrics['miF1'])
-            #                       +','+str(valid_metrics['maF1'])
-            #                       +','+str(valid_metrics['meanAUC'])
-            #                       +','+str(valid_metrics['medianAUC'])
-            #                       +','+str(valid_metrics['meanAUPR'])
-            #                       +','+str(valid_metrics['medianAUPR'])
-            #                       +','+str(valid_metrics['meanFDR'])
-            #                       +','+str(valid_metrics['medianFDR'])
-            #                       +','+'{elapse:3.3f}'.format(elapse=train_metrics['time'])
-            #                       +','+'{elapse:3.3f}'.format(elapse=valid_metrics['time'])
-            #                       +','+str(num_params)
-            #                       +'\n')
-
-            # with open(self.file_names['test'],'a') as f:
-            #     f.write(str(epoch)+','+str(test_metrics['loss'])
-            #                       +','+str(test_metrics['ACC'])
-            #                       +','+str(test_metrics['HA'])
-            #                       +','+str(test_metrics['ebF1'])
-            #                       +','+str(test_metrics['miF1'])
-            #                       +','+str(test_metrics['maF1'])
-            #                       +','+str(test_metrics['meanAUC'])
-            #                       +','+str(test_metrics['medianAUC'])
-            #                       +','+str(test_metrics['meanAUPR'])
-            #                       +','+str(test_metrics['medianAUPR'])
-            #                       +','+str(test_metrics['meanFDR'])
-            #                       +','+str(test_metrics['medianFDR'])
-            #                       +','+'{elapse:3.3f}'.format(elapse=train_metrics['time'])
-            #                       +','+'{elapse:3.3f}'.format(elapse=test_metrics['time'])
-            #                       +','+str(num_params)
-            #                       +'\n')
+        if valid_metrics is not None:
+            with open(self.file_names['valid'], 'a') as f:
+                f.write(str(epoch) + ',' + str(valid_metrics['loss'])
+                        + ',' + str(valid_metrics['ACC'])
+                        + ',' + str(valid_metrics['HA'])
+                        + ',' + str(valid_metrics['ebF1'])
+                        + ',' + str(valid_metrics['miF1'])
+                        + ',' + str(valid_metrics['maF1'])
+                        + ',' + str(valid_metrics['meanAUC'])
+                        + ',' + str(valid_metrics['medianAUC'])
+                        + ',' + str(valid_metrics['meanAUPR'])
+                        + ',' + str(valid_metrics['medianAUPR'])
+                        + ',' + str(valid_metrics['meanFDR'])
+                        + ',' + str(valid_metrics['medianFDR'])
+                        + ',' + '{elapse:3.3f}'.format(elapse=train_metrics['time'])
+                        + ',' + '{elapse:3.3f}'.format(elapse=valid_metrics['time'])
+                        + ',' + str(num_params)
+                        + '\n')
+        if test_metrics is not None:
+            with open(self.file_names['test'], 'a') as f:
+                f.write(str(epoch) + ',' + str(test_metrics['loss'])
+                        + ',' + str(test_metrics['ACC'])
+                        + ',' + str(test_metrics['HA'])
+                        + ',' + str(test_metrics['ebF1'])
+                        + ',' + str(test_metrics['miF1'])
+                        + ',' + str(test_metrics['maF1'])
+                        + ',' + str(test_metrics['meanAUC'])
+                        + ',' + str(test_metrics['medianAUC'])
+                        + ',' + str(test_metrics['meanAUPR'])
+                        + ',' + str(test_metrics['medianAUPR'])
+                        + ',' + str(test_metrics['meanFDR'])
+                        + ',' + str(test_metrics['medianFDR'])
+                        + ',' + '{elapse:3.3f}'.format(elapse=train_metrics['time'])
+                        + ',' + '{elapse:3.3f}'.format(elapse=test_metrics['time'])
+                        + ',' + str(num_params)
+                        + '\n')
 
             with open(self.file_names['valid_all_auc'], 'a') as f:
                 f.write(str(epoch))

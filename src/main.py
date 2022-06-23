@@ -17,15 +17,17 @@ args = get_args(parser)
 opt = config_args(args)
 from wordembedding.glove import Glove
 
+
 def main(opt):
     # ========= Loading Dataset =========#
 
-    #these have to be refactored
-    #train_data, valid_data = cars_data_loader.load_cars_dataset()
-    #opt.tgt_vocab_size = 3  # number of labels
+    # these have to be refactored
+    # train_data, valid_data = cars_data_loader.load_cars_dataset()
+    # opt.tgt_vocab_size = 3  # number of labels
     opt.max_token_seq_len_d = opt.max_ar_length
 
-    train_data, valid_data, test_data, labels = load_data(data_dir="/home/jonasklotz/private-git/remotesensing/data/deepglobe_patches/")
+    train_data, valid_data, test_data, labels = load_data(
+        data_dir="/home/jonasklotz/private-git/remotesensing/data/deepglobe_patches/")
     opt.tgt_vocab_size = len(labels)  # number of labels
 
     label_adj_matrix = torch.ones(opt.tgt_vocab_size, opt.tgt_vocab_size)  # full graph
@@ -68,29 +70,33 @@ def main(opt):
         crit = crit.cuda()
         if opt.gpu_id != -1:
             torch.cuda.set_device(opt.gpu_id)
-    print(opt.predict)
+    print(f"Predict = {opt.predict}")
     if opt.predict == True:
-        checkpoint = torch.load("/home/jonasklotz/private-git/remotesensing/results/firstRes" + '/model.chkpt')
+        checkpoint = torch.load("/home/jonasklotz/private-git/remotesensing/results/secondRes" + '/model.chkpt')
         model.load_state_dict(checkpoint['model'])
 
         ################# predict #################
-        batch = next(iter(train_data))
-        img = batch["image"]
-        from utils.image_utils import show
-        show(img)
-        pred, enc_output, *results = model(img, int_preds=True)
-        norm_pred = F.sigmoid(pred).data
-        gold = batch["labels"]
-        gold = gold.to(torch.float)
-        print(f"preds: {pred}\nnormed: {norm_pred}\nlabels {gold}")
-
-        # print(f"Shape norm pred {norm_pred.shape} end index { ((batch_idx + 1) * batch_size)}")
-        bce_loss = F.binary_cross_entropy_with_logits(norm_pred, gold, reduction='mean')
-        print(f"loss is {bce_loss.data}")
+        for i in range(100):
+            batch = next(iter(valid_data))
+            img = batch["image"]
+            from utils.image_utils import show, barplot_results
+            show(img, index=i)
+            pred, enc_output, *results = model(img, int_preds=True)
+            norm_pred = F.sigmoid(pred).data
+            gold = batch["labels"]
+            gold = gold.to(torch.float)
+            # create a weighting for our inbalanced datset
+            pos_weight = torch.tensor([5.8611238, 1.21062702, 5.82371649, 9.89122553,
+                                       14.41991786, 9.75859599, 173.63953488])
+            bce_loss = F.binary_cross_entropy_with_logits(norm_pred, gold, reduction='mean', pos_weight=pos_weight)
+            rounded_loss = np.round(bce_loss.item(), 2)
+            barplot_results(norm_pred, gold, labels, loss=rounded_loss, index=i)
+            # print(f"Shape norm pred {norm_pred.shape} end index { ((batch_idx + 1) * batch_size)}")
 
     else:
         try:
-            run_model(model=model, train_data=train_data, test_data= test_data, valid_data=valid_data, crit=crit, optimizer=optimizer,
+            run_model(model=model, train_data=train_data, test_data=test_data, valid_data=valid_data, crit=crit,
+                      optimizer=optimizer,
                       scheduler=scheduler, opt=opt)
 
         except KeyboardInterrupt:

@@ -81,16 +81,13 @@ def load_data(data_dir="/data/deepglobe_patches/", transformations=None):
     # Converting each image from a numpy array to a tensor (so we can do calculations on the GPU)
     # Normalizing the image as following: image = (image - mean) / std
     if not transformations:
-        rand_apply = ([transforms.RandomVerticalFlip(p=1),
-                       transforms.RandomHorizontalFlip(p=1),
-                       transforms.RandomRotation(degrees=(-90, 90))])
-
         transformations = transforms.Compose([
             transforms.ToPILImage(),  # to PIL such that it can be converted to tensor
-            transforms.RandomApply(rand_apply, p=0.3),
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
-
+            # transforms.RandomVerticalFlip(p=0.3),
+            # transforms.RandomHorizontalFlip(p=0.3),
+            # transforms.RandomRotation(degrees=(-90, 90)),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
 

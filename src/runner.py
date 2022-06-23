@@ -9,7 +9,7 @@ warnings.filterwarnings("ignore")
 
 
 def run_model(model, train_data, valid_data, test_data, crit, optimizer, scheduler, opt):
-    logger = evals.Logger(opt)
+    eval_logger = evals.EvalsLogger(opt)
 
     valid_losses = []
 
@@ -56,8 +56,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         torch.save(all_targets, path.join(opt.model_name, 'epochs', 'test_targets' + str(epoch_i + 1) + '.pt'))
         test_metrics = evals.compute_metrics(all_predictions, all_targets, 0, opt, elapsed, all_metrics=True)
 
-        best_valid, best_test = logger.evaluate(train_metrics, valid_metrics, test_metrics, epoch_i,
-                                                opt.total_num_parameters)
+        eval_logger.evaluate_train_vali(train_metrics, valid_metrics, test_metrics=test_metrics,epoch= epoch_i, num_params= opt.total_num_parameters)
 
         print(opt.model_name)
 

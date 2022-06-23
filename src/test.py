@@ -37,16 +37,18 @@ def test_epoch(model, test_data, opt, description):
             pred = pred[0:batch[0][0].size(0)]
             gold = gold[0:batch[0][0].size(0)]
 
-        # gold_binary = utils.get_gold_binary(gold.data.cpu(), opt.tgt_vocab_size)  # .cuda()
-        gold_binary = gold.to(torch.float)
+        gold = gold.to(torch.float)
+        print(gold)
         norm_pred = F.sigmoid(pred).data
         # print(f"Shape norm pred {norm_pred.shape} end index { ((batch_idx + 1) * batch_size)}")
-        bce_loss = F.binary_cross_entropy_with_logits(pred, gold_binary, reduction='mean')
+        pos_weight = torch.tensor([5.8611238, 1.21062702, 5.82371649, 9.89122553,
+                                   14.41991786, 9.75859599, 173.63953488])
+        bce_loss = F.binary_cross_entropy_with_logits(norm_pred, gold, reduction='mean', pos_weight=pos_weight)
         bce_total += bce_loss.item()
 
         start_idx, end_idx = (batch_idx * batch_size), ((batch_idx + 1) * batch_size)
         all_predictions[start_idx:end_idx] = norm_pred
-        all_targets[start_idx:end_idx] = gold_binary
+        all_targets[start_idx:end_idx] = gold
 
         batch_idx += 1
 
