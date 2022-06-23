@@ -24,6 +24,7 @@ def get_args(parser):
     parser.add_argument('-lr', type=float, default=0.0002)
     parser.add_argument('-lr_step_size', type=int, default=1)
     parser.add_argument('-lr_decay', type=float, default=0)
+    parser.add_argument('-predict', type=bool, default=False)
     parser.add_argument('-max_encoder_len', type=int, default=300)
     parser.add_argument('-dropout', type=float, default=0.1)
     parser.add_argument('-dec_dropout', type=float, default=-1)

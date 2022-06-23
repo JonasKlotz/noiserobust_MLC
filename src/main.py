@@ -1,4 +1,5 @@
 import argparse, warnings
+import torch.nn.functional as F
 
 import utils.utils as utils
 import torch, torch.nn as nn
@@ -67,18 +68,34 @@ def main(opt):
         crit = crit.cuda()
         if opt.gpu_id != -1:
             torch.cuda.set_device(opt.gpu_id)
-
-    if opt.load_pretrained:
-        checkpoint = torch.load(opt.model_name + '/model.chkpt')
+    print(opt.predict)
+    if opt.predict == True:
+        checkpoint = torch.load("/home/jonasklotz/private-git/remotesensing/results/firstRes" + '/model.chkpt')
         model.load_state_dict(checkpoint['model'])
 
-    try:
-        run_model(model=model, train_data=train_data, test_data= test_data, valid_data=valid_data, crit=crit, optimizer=optimizer,
-                  scheduler=scheduler, opt=opt)
+        ################# predict #################
+        batch = next(iter(train_data))
+        img = batch["image"]
+        from utils.image_utils import show
+        show(img)
+        pred, enc_output, *results = model(img, int_preds=True)
+        norm_pred = F.sigmoid(pred).data
+        gold = batch["labels"]
+        gold = gold.to(torch.float)
+        print(f"preds: {pred}\nnormed: {norm_pred}\nlabels {gold}")
 
-    except KeyboardInterrupt:
-        print('-' * 89 + '\nManual Exit')
-        exit()
+        # print(f"Shape norm pred {norm_pred.shape} end index { ((batch_idx + 1) * batch_size)}")
+        bce_loss = F.binary_cross_entropy_with_logits(norm_pred, gold, reduction='mean')
+        print(f"loss is {bce_loss.data}")
+
+    else:
+        try:
+            run_model(model=model, train_data=train_data, test_data= test_data, valid_data=valid_data, crit=crit, optimizer=optimizer,
+                      scheduler=scheduler, opt=opt)
+
+        except KeyboardInterrupt:
+            print('-' * 89 + '\nManual Exit')
+            exit()
 
 
 if __name__ == '__main__':

@@ -29,7 +29,8 @@ def train_epoch(model, train_data, crit, optimizer, opt, epoch):
         norm_pred = F.sigmoid(pred)
 
 
-        gold_binary = utils.get_gold_binary(gold.data.cpu(), opt.tgt_vocab_size)  # .cuda()
+        #gold_binary = utils.get_gold_binary(gold.data.cpu(), opt.tgt_vocab_size)  # .cuda()
+        gold_binary = gold.to(torch.float)
         bce_loss = F.binary_cross_entropy_with_logits(pred, gold_binary, reduction='mean')
         loss += bce_loss
         bce_total += bce_loss.item()

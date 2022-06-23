@@ -19,6 +19,9 @@ def show(imgs):
         img= imgs[i,...]
         if isinstance(img, torch.Tensor):
             img = img.permute(1, 2, 0)
-        axs[0, i].imshow(np.asarray(img))
+        if torch.min(img) < 0:
+            img = ((img+1)*128).to(torch.int)
+
+        axs[0, i].imshow(np.asarray(img), vmin=0, vmax=255)
         axs[0, i].set(xticklabels=[], yticklabels=[], xticks=[], yticks=[])
     plt.show()
