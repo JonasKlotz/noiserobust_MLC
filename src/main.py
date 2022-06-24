@@ -20,18 +20,11 @@ from wordembedding.glove import Glove
 
 def main(opt):
     # ========= Loading Dataset =========#
-
-    # these have to be refactored
-    # train_data, valid_data = cars_data_loader.load_cars_dataset()
-    # opt.tgt_vocab_size = 3  # number of labels
     opt.max_token_seq_len_d = opt.max_ar_length
-
     train_data, valid_data, test_data, labels = load_data(
-        data_dir="/home/jonasklotz/private-git/remotesensing/data/deepglobe_patches/")
+        data_dir="data/deepglobe_patches/")
     opt.tgt_vocab_size = len(labels)  # number of labels
-
     label_adj_matrix = torch.ones(opt.tgt_vocab_size, opt.tgt_vocab_size)  # full graph
-
     weights_matrix = torch.FloatTensor(np.random.normal(scale=0.6, size=(opt.tgt_vocab_size, opt.d_model)))
 
     # ========= Preparing Model =========#
@@ -57,40 +50,41 @@ def main(opt):
 
     adv_optimizer = None
 
-    # crit is not used for our training?????
+    # crit is not used for our training, we still use BCE in the train and test loop
     crit = utils.get_criterion(opt)
-
+    ################## manage CUDA ################
     if torch.cuda.device_count() > 1 and opt.multi_gpu:
         print("Using", torch.cuda.device_count(), "GPUs!")
         model = nn.DataParallel(model)
-
     if torch.cuda.is_available() and opt.cuda:
         model = model.cuda()
-
         crit = crit.cuda()
         if opt.gpu_id != -1:
             torch.cuda.set_device(opt.gpu_id)
     print(f"Predict = {opt.predict}")
+
+    ######################## Load a model  ##########################
     if opt.predict == True:
-        checkpoint = torch.load("/home/jonasklotz/private-git/remotesensing/results/secondRes" + '/model.chkpt')
+        checkpoint = torch.load("/home/jonasklotz/private-git/remotesensing/results/deepglobe/thirdRes" + '/model.chkpt')
         model.load_state_dict(checkpoint['model'])
 
         ################# predict #################
-        for i in range(100):
+        for i in range(1,2):
             batch = next(iter(valid_data))
             img = batch["image"]
             from utils.image_utils import show, barplot_results
             show(img, index=i)
             pred, enc_output, *results = model(img, int_preds=True)
-            norm_pred = F.sigmoid(pred).data
             gold = batch["labels"]
             gold = gold.to(torch.float)
             # create a weighting for our inbalanced datset
-            pos_weight = torch.tensor([5.8611238, 1.21062702, 5.82371649, 9.89122553,
-                                       14.41991786, 9.75859599, 173.63953488])
-            bce_loss = F.binary_cross_entropy_with_logits(norm_pred, gold, reduction='mean', pos_weight=pos_weight)
+            # pos_weight = torch.tensor([5.8611238, 1.21062702, 5.82371649, 9.89122553,
+            #                            14.41991786, 9.75859599, 173.63953488])
+            # weight_bce_loss = F.binary_cross_entropy_with_logits(pred, gold, reduction='mean', pos_weight=pos_weight)
+            bce_loss = F.binary_cross_entropy_with_logits(pred, gold)
+
             rounded_loss = np.round(bce_loss.item(), 2)
-            barplot_results(norm_pred, gold, labels, loss=rounded_loss, index=i)
+            barplot_results(F.sigmoid(pred).data, gold, labels, loss=rounded_loss, index=i)
             # print(f"Shape norm pred {norm_pred.shape} end index { ((batch_idx + 1) * batch_size)}")
 
     else:
