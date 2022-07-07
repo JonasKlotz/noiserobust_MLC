@@ -111,7 +111,7 @@ class DeviceDataLoader():
         all_batches = [b for b in self.dl]
         for batch in all_batches:
             device_batch = to_device(batch, self.device)
-            print(device_batch[0].get_device(), device_batch[1].get_device())
+            #print(device_batch[0].get_device(), device_batch[1].get_device())
             yield device_batch
 
     def __len__(self):
