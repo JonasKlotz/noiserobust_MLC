@@ -65,26 +65,36 @@ def main(opt):
 
     ######################## Load a model  ##########################
     if opt.predict == True:
-        checkpoint = torch.load("/home/jonasklotz/private-git/remotesensing/results/deepglobe/thirdRes" + '/model.chkpt')
+        checkpoint = torch.load("results/deepglobe/5_res" + '/model.chkpt')
         model.load_state_dict(checkpoint['model'])
 
         ################# predict #################
-        for i in range(1,2):
+        for i in range(1):
+            loss = 0
             batch = next(iter(valid_data))
             img = batch["image"]
             from utils.image_utils import show, barplot_results
             show(img, index=i)
-            pred, enc_output, *results = model(img, int_preds=True)
+            pred, enc_output, *results = model(img)
             gold = batch["labels"]
             gold = gold.to(torch.float)
+            normed_pred = F.sigmoid(pred).data
             # create a weighting for our inbalanced datset
             # pos_weight = torch.tensor([5.8611238, 1.21062702, 5.82371649, 9.89122553,
             #                            14.41991786, 9.75859599, 173.63953488])
             # weight_bce_loss = F.binary_cross_entropy_with_logits(pred, gold, reduction='mean', pos_weight=pos_weight)
             bce_loss = F.binary_cross_entropy_with_logits(pred, gold)
+            loss += bce_loss
+            from sklearn.metrics import average_precision_score
+            print((loss))
+            print(f"macro ap {average_precision_score(gold, normed_pred, average='macro')}")
+            print(f"micro ap {average_precision_score(gold, normed_pred, average='micro')}")
+            #print(f"micro f1 {f1_score(gold, normed_pred, average='micro')}")
+            #print(f"macro f1 {f1_score(gold, normed_pred, average='macro')}")
+
 
             rounded_loss = np.round(bce_loss.item(), 2)
-            barplot_results(F.sigmoid(pred).data, gold, labels, loss=rounded_loss, index=i)
+            barplot_results(normed_pred, gold, labels, loss=rounded_loss, index=i)
             # print(f"Shape norm pred {norm_pred.shape} end index { ((batch_idx + 1) * batch_size)}")
 
     else:

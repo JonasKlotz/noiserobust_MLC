@@ -4,10 +4,15 @@ from torchvision import models
 
 class RESNETEncoder(nn.Module):
     def __init__(
-            self, d_model=512,  pretrained=True):
+            self, d_model=300,  pretrained=True, resnet_layers=18):
         super(RESNETEncoder, self).__init__()
+        if resnet_layers == 18:
+            model = models.resnet18(pretrained=pretrained)
+        elif resnet_layers == 50:
+            model = models.resnet50(pretrained=pretrained)
+        else:
+            model = models.resnet101(pretrained=pretrained)
 
-        model = models.resnet101(pretrained=pretrained)
         self.features = nn.Sequential(
             model.conv1,
             model.bn1,

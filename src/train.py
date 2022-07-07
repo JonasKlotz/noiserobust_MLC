@@ -4,7 +4,6 @@ import torch, torch.nn.functional as F
 from tqdm import tqdm
 
 
-
 def train_epoch(model, train_data, crit, optimizer, opt, epoch):
     model.train()
 
@@ -21,9 +20,8 @@ def train_epoch(model, train_data, crit, optimizer, opt, epoch):
 
         img = batch["image"]
         gold = batch["labels"]
-
-        optimizer.zero_grad()
-        pred, enc_output, *results = model(img, return_attns=False, int_preds=opt.int_preds)
+        optimizer.zero_grad() # reset gradients
+        pred, enc_output, *results = model(img, return_attns=False)
         norm_pred = F.sigmoid(pred)
 
 

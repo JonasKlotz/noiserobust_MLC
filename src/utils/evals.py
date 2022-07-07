@@ -19,6 +19,7 @@ from sklearn.metrics import roc_curve, auc
 FORMAT = '[%(asctime)s] %(levelname)s - %(message)s'
 logging.basicConfig(level=logging.INFO, format=FORMAT)
 LOGGER = logging.getLogger(__name__)
+from sklearn.metrics import average_precision_score, f1_score
 
 
 def list2sparse(A, n_labels=None):
@@ -344,6 +345,17 @@ def Find_Optimal_Cutoff(all_targets, all_predictions):
 
 
 def compute_metrics(all_predictions, all_targets, loss, args, elapsed, all_metrics=True, verbose=True):
+    """
+    :param all_predictions:
+    :param all_targets:
+    :param loss:
+    :param args:
+    :param elapsed:
+    :param all_metrics:
+    :param verbose:
+    :return:
+
+    """
     all_targets = all_targets.numpy()
     all_predictions = all_predictions.numpy()
 
@@ -377,7 +389,8 @@ def compute_metrics(all_predictions, all_targets, loss, args, elapsed, all_metri
     tp, fp, fn = compute_tp_fp_fn(all_targets, all_predictions, axis=0)
     mif1 = f1_score_from_stats(tp, fp, fn, average='micro')
     maf1 = f1_score_from_stats(tp, fp, fn, average='macro')
-
+    print(f"macro ap {average_precision_score(all_targets, all_predictions, average='macro')}")
+    print(f"micro ap {average_precision_score(all_targets, all_predictions, average='micro')}")
     eval_ret = OrderedDict([('Subset accuracy', acc),
                             ('Hamming accuracy', 1 - hl),
                             ('Example-based F1', exf1),
@@ -395,8 +408,6 @@ def compute_metrics(all_predictions, all_targets, loss, args, elapsed, all_metri
         print('ebF1:  ' + str(ebF1))
         print('miF1:  ' + str(miF1))
         print('maF1:  ' + str(maF1))
-
-    if verbose:
         print('uAUC:  ' + str(meanAUC))
         # print('mAUC:  '+str(medianAUC))
         print('uAUPR: ' + str(meanAUPR))
