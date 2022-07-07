@@ -27,7 +27,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         elapsed = ((time.time() - start) / 60)
         print('\n(Training) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
         train_loss = train_loss / len(train_data)
-        print('train_loss : ' + str(train_loss))
+        print(f'train_loss : {train_loss: .4f}')
 
         train_metrics = evals.compute_metrics(all_predictions, all_targets, 0, opt, elapsed, all_metrics=True)
 
@@ -37,7 +37,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         elapsed = ((time.time() - start) / 60)
         print('\n(Validation) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
         valid_loss = valid_loss / (valid_data.__len__())
-        print('valid_loss : ' + str(valid_loss))
+        print(f'valid_loss : {valid_loss: .4f}')
 
         torch.save(all_predictions, path.join(opt.model_name, 'epochs', 'valid_preds' + str(epoch_i + 1) + '.pt'))
         torch.save(all_targets, path.join(opt.model_name, 'epochs', 'valid_targets' + str(epoch_i + 1) + '.pt'))
@@ -45,6 +45,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         valid_losses += [valid_loss]
 
         ################################## TEST ###################################
+        '''
         start = time.time()
         all_predictions, all_targets, test_loss = test_epoch(model, test_data, opt, '(Testing)')
         elapsed = ((time.time() - start) / 60)
@@ -57,7 +58,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         test_metrics = evals.compute_metrics(all_predictions, all_targets, 0, opt, elapsed, all_metrics=True)
 
         eval_logger.evaluate_train_vali(train_metrics, valid_metrics, test_metrics=test_metrics,epoch= epoch_i, num_params= opt.total_num_parameters)
-
+        
         print(opt.model_name)
 
         losses.append([epoch_i + 1, train_loss, valid_loss])
@@ -69,3 +70,4 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         loss_file.write(',' + str(valid_loss))
         loss_file.write(',' + str(test_loss))
         loss_file.write('\n')
+        '''
