@@ -19,6 +19,10 @@ from wordembedding.glove import Glove
 
 
 def main(opt):
+
+    # Printing Debug Information
+    print("Cuda is available:", torch.cuda.is_available())
+
     # ========= Loading Dataset =========#
     opt.max_token_seq_len_d = opt.max_ar_length
     train_data, valid_data, test_data, labels = load_data(

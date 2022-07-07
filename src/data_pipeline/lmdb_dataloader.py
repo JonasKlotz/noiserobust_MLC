@@ -43,6 +43,14 @@ class LMDBLoader(Dataset):
             self._init_db()
         return self.len
 
+    def __iter__(self):
+        # initialize if not already initialized
+        if self.len is None:
+            self._init_db()
+        # return a generator
+        for i in range(self.len):
+            yield self.__getitem__(i)
+
     def __getitem__(self, idx):
         # Delay loading LMDB data until after initialization
         if self.env is None:
@@ -100,8 +108,11 @@ class DeviceDataLoader():
 
     def __iter__(self):
         """Yield a batch of data after moving it to device"""
-        for b in self.dl:
-            yield to_device(b, self.device)
+        all_batches = [b for b in self.dl]
+        for batch in all_batches:
+            device_batch = to_device(batch, self.device)
+            print(device_batch[0].get_device(), device_batch[1].get_device())
+            yield device_batch
 
     def __len__(self):
         """Number of batches"""

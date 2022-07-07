@@ -17,3 +17,7 @@ torch==1.11.0
 torchvision==0.12.0
 tqdm==4.64.0
 urllib3==1.26.9
+
+
+# manually installing pytorch with cuda (Oliver)
+# pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
