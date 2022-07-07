@@ -27,7 +27,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         elapsed = ((time.time() - start) / 60)
         print('\n(Training) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
         train_loss = train_loss / len(train_data)
-        print('B : ' + str(train_loss))
+        print('train_loss : ' + str(train_loss))
 
         train_metrics = evals.compute_metrics(all_predictions, all_targets, 0, opt, elapsed, all_metrics=True)
 
@@ -37,7 +37,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         elapsed = ((time.time() - start) / 60)
         print('\n(Validation) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
         valid_loss = valid_loss / (valid_data.__len__())
-        print('B : ' + str(valid_loss))
+        print('valid_loss : ' + str(valid_loss))
 
         torch.save(all_predictions, path.join(opt.model_name, 'epochs', 'valid_preds' + str(epoch_i + 1) + '.pt'))
         torch.save(all_targets, path.join(opt.model_name, 'epochs', 'valid_targets' + str(epoch_i + 1) + '.pt'))
@@ -50,7 +50,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         elapsed = ((time.time() - start) / 60)
         print('\n(Testing) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
         test_loss = test_loss / (test_data.__len__())
-        print('B : ' + str(test_loss))
+        print('test_loss : ' + str(test_loss))
 
         torch.save(all_predictions, path.join(opt.model_name, 'epochs', 'test_preds' + str(epoch_i + 1) + '.pt'))
         torch.save(all_targets, path.join(opt.model_name, 'epochs', 'test_targets' + str(epoch_i + 1) + '.pt'))

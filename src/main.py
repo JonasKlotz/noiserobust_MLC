@@ -9,7 +9,7 @@ from lamp.Models import LAMP
 from config_args import config_args, get_args
 from runner import run_model
 import numpy as np
-
+from predict import predict
 warnings.filterwarnings("ignore")
 
 parser = argparse.ArgumentParser()
@@ -23,6 +23,7 @@ def main(opt):
     opt.max_token_seq_len_d = opt.max_ar_length
     train_data, valid_data, test_data, labels = load_data(
         data_dir="data/deepglobe_patches/")
+
     opt.tgt_vocab_size = len(labels)  # number of labels
     label_adj_matrix = torch.ones(opt.tgt_vocab_size, opt.tgt_vocab_size)  # full graph
     weights_matrix = torch.FloatTensor(np.random.normal(scale=0.6, size=(opt.tgt_vocab_size, opt.d_model)))
@@ -36,7 +37,7 @@ def main(opt):
                  label_adj_matrix=label_adj_matrix, label_mask=opt.label_mask, graph_conv=opt.graph_conv,
                  attn_type=opt.attn_type, int_preds=opt.int_preds, word2vec_weights=weights_matrix)
 
-    print(model)
+    # print(model)
     # print(opt.model_name)
 
     opt.total_num_parameters = int(utils.count_parameters(model))
@@ -52,6 +53,7 @@ def main(opt):
 
     # crit is not used for our training, we still use BCE in the train and test loop
     crit = utils.get_criterion(opt)
+
     ################## manage CUDA ################
     if torch.cuda.device_count() > 1 and opt.multi_gpu:
         print("Using", torch.cuda.device_count(), "GPUs!")
@@ -61,47 +63,19 @@ def main(opt):
         crit = crit.cuda()
         if opt.gpu_id != -1:
             torch.cuda.set_device(opt.gpu_id)
-    print(f"Predict = {opt.predict}")
+
 
     ######################## Load a model  ##########################
     if opt.predict == True:
-        checkpoint = torch.load("results/deepglobe/5_res" + '/model.chkpt')
-        model.load_state_dict(checkpoint['model'])
+        print("============== Predict ======================")
+        predict(model, valid_data, labels, weights_path="results/deepglobe/5_res/model.chkpt", n=5)
 
-        ################# predict #################
-        for i in range(1):
-            loss = 0
-            batch = next(iter(valid_data))
-            img = batch["image"]
-            from utils.image_utils import show, barplot_results
-            show(img, index=i)
-            pred, enc_output, *results = model(img)
-            gold = batch["labels"]
-            gold = gold.to(torch.float)
-            normed_pred = F.sigmoid(pred).data
-            # create a weighting for our inbalanced datset
-            # pos_weight = torch.tensor([5.8611238, 1.21062702, 5.82371649, 9.89122553,
-            #                            14.41991786, 9.75859599, 173.63953488])
-            # weight_bce_loss = F.binary_cross_entropy_with_logits(pred, gold, reduction='mean', pos_weight=pos_weight)
-            bce_loss = F.binary_cross_entropy_with_logits(pred, gold)
-            loss += bce_loss
-            from sklearn.metrics import average_precision_score
-            print((loss))
-            print(f"macro ap {average_precision_score(gold, normed_pred, average='macro')}")
-            print(f"micro ap {average_precision_score(gold, normed_pred, average='micro')}")
-            #print(f"micro f1 {f1_score(gold, normed_pred, average='micro')}")
-            #print(f"macro f1 {f1_score(gold, normed_pred, average='macro')}")
-
-
-            rounded_loss = np.round(bce_loss.item(), 2)
-            barplot_results(normed_pred, gold, labels, loss=rounded_loss, index=i)
-            # print(f"Shape norm pred {norm_pred.shape} end index { ((batch_idx + 1) * batch_size)}")
 
     else:
         try:
+            print("============== Start Training ======================")
             run_model(model=model, train_data=train_data, test_data=test_data, valid_data=valid_data, crit=crit,
-                      optimizer=optimizer,
-                      scheduler=scheduler, opt=opt)
+                      optimizer=optimizer, scheduler=scheduler, opt=opt)
 
         except KeyboardInterrupt:
             print('-' * 89 + '\nManual Exit')

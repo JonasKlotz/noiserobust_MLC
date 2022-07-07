@@ -72,7 +72,44 @@ class LMDBLoader(Dataset):
 
         labels_onehot = torch.from_numpy(labels_onehot)
 
-        return {'image': img, 'labels': labels_onehot, 'labels_string': LABELS}
+        return img, labels_onehot
+
+
+# helper functions to load the data and model onto GPU
+def get_default_device():
+    """Pick GPU if available, else CPU"""
+    if torch.cuda.is_available():
+        return torch.device('cuda')
+    else:
+        return torch.device('cpu')
+
+
+def to_device(data, device):
+    """Move tensor(s) to chosen device"""
+    if isinstance(data, (list, tuple)):
+        return [to_device(x, device) for x in data]
+    return data.to(device, non_blocking=True)
+
+
+class DeviceDataLoader():
+    """Wrap a dataloader to move data to a device"""
+
+    def __init__(self, dl, device):
+        self.dl = dl
+        self.device = device
+
+    def __iter__(self):
+        """Yield a batch of data after moving it to device"""
+        for b in self.dl:
+            yield to_device(b, self.device)
+
+    def __len__(self):
+        """Number of batches"""
+        return len(self.dl)
+
+    @property
+    def batch_size(self):
+        return self.dl.batch_size
 
 
 def load_data(data_dir="/data/deepglobe_patches/", transformations=None):
@@ -99,15 +136,22 @@ def load_data(data_dir="/data/deepglobe_patches/", transformations=None):
     train_size = int(0.8 * len(train_data))
     test_size = len(train_data) - train_size
     train_data, val_data = torch.utils.data.random_split(train_data, [train_size, test_size])
+
     # Create the dataloader for each dataset
-    train_loader = DataLoader(train_data, batch_size=1, shuffle=True,
+    train_loader = DataLoader(train_data, batch_size=32, shuffle=True,
                               num_workers=1, drop_last=True)
-    val_loader = DataLoader(val_data, batch_size=1, shuffle=False,
+
+    val_loader = DataLoader(val_data, batch_size=32, shuffle=False,
                             num_workers=1, drop_last=True)
     # test_loader = DataLoader(test_data, batch_size=1, shuffle=False,
     #                        num_workers=1, drop_last=True)
 
-    return train_loader, val_loader, val_loader, LABELS  # todo fix when we have labels for val and test
+    device = get_default_device()
+    # loading training and validation data onto GPU
+    train_dl = DeviceDataLoader(train_loader, device)
+    val_dl = DeviceDataLoader(val_loader, device)
+    test_dl = val_dl
+    return train_dl, val_dl, test_dl, LABELS  # todo fix when we have labels for val and test
 
 
 if __name__ == '__main__':
@@ -115,7 +159,7 @@ if __name__ == '__main__':
     for sample in dataloader:
         print(sample)
 
-    tl, vl, labels = load_data()
+    tl, vl,test_loader, labels = load_data()
     for batch in tqdm(tl, mininterval=0.5, desc='(Training)', leave=False):
         print(batch)
         break

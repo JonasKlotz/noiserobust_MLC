@@ -104,11 +104,10 @@ class LAMP(nn.Module):
         batch_size = original_size[0]
         #print(f"\nModel input is a tensor of size {original_size}")
 
-        src_seq = src.view(batch_size, -1) # reshape our image into a flat vector
-        enc_output, *enc_self_attns = self.encoder(src_seq, original_size, return_attns=return_attns)
+        enc_output = self.encoder(src)
 
-        # reshape src? appearantly dec accepts sources only in a2d shaoe with batchsize and pixels????
-        #src1 = src.view(batch_size, -1)
+        src_seq = src.view(batch_size, -1) # reshape our image into a flat vector
+        # apparently dec accepts sources only in a 2d shape with batchsize and pixels????
         dec_output, *dec_output2 = self.decoder(src_seq, enc_output, return_attns=return_attns,
                                                 int_preds=int_preds)
 
@@ -123,7 +122,9 @@ class LAMP(nn.Module):
             return seq_logit.view(-1, seq_logit.size(-1)), enc_output, intermediate_preds
 
         elif return_attns:
-            return seq_logit.view(-1, seq_logit.size(-1)), enc_output, enc_self_attns, dec_output2
+            return seq_logit.view(-1, seq_logit.size(-1)), enc_output, None , dec_output2
 
         else:
             return seq_logit.view(-1, seq_logit.size(-1)), enc_output, None
+
+

@@ -17,32 +17,26 @@ def train_epoch(model, train_data, crit, optimizer, opt, epoch):
 
     for batch in tqdm(train_data, mininterval=0.5, desc='(Training)', leave=False):
         loss, d_loss = 0, 0
-
-        img = batch["image"]
-        gold = batch["labels"]
+        img, labels = batch
         optimizer.zero_grad() # reset gradients
         pred, enc_output, *results = model(img, return_attns=False)
-        norm_pred = F.sigmoid(pred)
+        norm_pred = F.sigmoid(pred) # normalize predictions to save them later NOT USED IN LOSS
 
 
-        gold = gold.to(torch.float)
+        labels = labels.to(torch.float)
         # pos_weight = torch.tensor([5.8611238, 1.21062702, 5.82371649, 9.89122553,
         #                            14.41991786, 9.75859599, 173.63953488])
         # bce_loss = F.binary_cross_entropy_with_logits(norm_pred, gold, reduction='mean', pos_weight=pos_weight)
-        bce_loss = F.binary_cross_entropy_with_logits(pred, gold, reduction='mean')
+        bce_loss = F.binary_cross_entropy_with_logits(pred, labels, reduction='mean')
         loss += bce_loss
         bce_total += bce_loss.item()
-        if opt.int_preds and not opt.matching_mlp:
-            for i in range(len(results[0])):
-                #bce_loss = F.binary_cross_entropy_with_logits(results[0][i], gold, reduction='mean', pos_weight=pos_weight)
-                bce_loss = F.binary_cross_entropy_with_logits(pred, gold, reduction='mean')
-                loss += (opt.int_pred_weight) * bce_loss
+
 
         if epoch == opt.thresh1:
             opt.init_model = copy.deepcopy(model)
         loss.backward()
         optimizer.step()
-        tgt_out = gold.data
+        tgt_out = labels.data
         pred_out = norm_pred.data
 
         ## Updates ##
