@@ -68,7 +68,7 @@ def main(opt):
     ######################## Load a model  ##########################
     if opt.predict == True:
         print("============== Predict ======================")
-        predict(model, valid_data, labels, weights_path="results/deepglobe/5_res/model.chkpt", n=5)
+        predict(model, valid_data, labels, weights_path="results/deepglobe/8_epoch/model.chkpt", n=5)
 
 
     else:
