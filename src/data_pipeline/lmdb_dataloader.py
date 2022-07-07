@@ -139,10 +139,10 @@ def load_data(data_dir="/data/deepglobe_patches/", transformations=None):
 
     # Create the dataloader for each dataset
     train_loader = DataLoader(train_data, batch_size=32, shuffle=True,
-                              num_workers=1, drop_last=True)
+                              num_workers=0, drop_last=True)
 
     val_loader = DataLoader(val_data, batch_size=32, shuffle=False,
-                            num_workers=1, drop_last=True)
+                            num_workers=0, drop_last=True)
     # test_loader = DataLoader(test_data, batch_size=1, shuffle=False,
     #                        num_workers=1, drop_last=True)
 

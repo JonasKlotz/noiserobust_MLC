@@ -214,5 +214,6 @@ def test_lmdb(path='data/deepglobe_patches/train'):
 if __name__ == "__main__":
 
     subsample_whole_dir(dir_path="data/deepglobe/valid")
+    # subsample_whole_dir(dir_path="data/deepglobe/test")
     # test_lmdb()
     # get_labels_from_deepglobe()
