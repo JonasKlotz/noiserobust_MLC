@@ -15,7 +15,12 @@ class RESNETEncoder(nn.Module):
 
         # add last layer
         num_ftrs = self.model.fc.in_features # in features
+
+        for param in self.model.parameters():
+            param.requires_grad = False
+
         self.model.fc = nn.Linear(num_ftrs, d_model) # out features are model dim
+
 
 
     def forward(self, img):
