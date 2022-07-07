@@ -18,7 +18,7 @@ def train_epoch(model, train_data, crit, optimizer, opt, epoch):
     for batch in tqdm(train_data, mininterval=0.5, desc='(Training)', leave=False):
         loss, d_loss = 0, 0
         img, labels = batch
-        print(img.get_device(), labels.get_device())
+        #print(img.get_device(), labels.get_device())
         optimizer.zero_grad() # reset gradients
         pred, enc_output, *results = model(img, return_attns=False)
         norm_pred = F.sigmoid(pred) # normalize predictions to save them later NOT USED IN LOSS
