@@ -25,7 +25,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         all_predictions, all_targets, train_loss = train_epoch(model, train_data, crit, optimizer, opt,
                                                                     epoch=epoch_i)
         elapsed = ((time.time() - start) / 60)
-        print('\n(Training) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
+        # print('\n(Training) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
         train_loss = train_loss / len(train_data)
         print(f'train_loss : {train_loss: .4f}')
 
@@ -35,7 +35,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         start = time.time()
         all_predictions, all_targets, valid_loss = test_epoch(model, valid_data, opt, '(Validation)')
         elapsed = ((time.time() - start) / 60)
-        print('\n(Validation) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
+        # print('\n(Validation) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
         valid_loss = valid_loss / (valid_data.__len__())
         print(f'valid_loss : {valid_loss: .4f}')
 
