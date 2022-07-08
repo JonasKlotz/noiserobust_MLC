@@ -6,13 +6,13 @@ import os
 
 def get_args(parser):
     parser.add_argument('-dataroot', type=str, default='data/')
-    parser.add_argument('-dataset', type=str, default='reuters')
+    parser.add_argument('-dataset', type=str, default='deepglobe')
     parser.add_argument('-results_dir', type=str, default='results/')
     # parser.add_argument('-results_dir', type=str, default='/bigtemp/jjl5sw/deepENCODE/results/')
     parser.add_argument('-epoch', type=int, default=50)
     parser.add_argument('-batch_size', type=int, default=64)
     parser.add_argument('-test_batch_size', type=int, default=-1)
-    parser.add_argument('-d_model', type=int, default=512)
+    parser.add_argument('-d_model', type=int, default=300)
     parser.add_argument('-d_inner_hid', type=int, default=-1)
     parser.add_argument('-d_k', type=int, default=-1)
     parser.add_argument('-d_v', type=int, default=-1)

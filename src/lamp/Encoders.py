@@ -4,7 +4,7 @@ from torchvision import models
 
 class RESNETEncoder(nn.Module):
     def __init__(
-            self, d_model=300,  pretrained=True, resnet_layers=18, freeze= True):
+            self, d_model=300,  pretrained=True, resnet_layers=18, freeze= False):
         super(RESNETEncoder, self).__init__()
         if resnet_layers == 18:
             self.model = models.resnet18(pretrained=pretrained)

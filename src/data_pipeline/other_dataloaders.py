@@ -44,7 +44,7 @@ def decode_target(target, threshold=0.5):  # decoding the prediction tensors of 
 
 
 # A class to create a Custom Dataset that will load images and encode the labels of those images from their folder names
-class myDataset(Dataset):
+class GenericDataset(Dataset):
     def __init__(self, root_dir, transform=None):
         self.transform = transform
         self.root_dir = root_dir
@@ -103,25 +103,24 @@ def to_device(data, device):
     return data.to(device, non_blocking=True)
 
 
-
-def load_apparel_data(data_dir='data/apparel-images-dataset', batch_size = 32):
+def load_apparel_data(data_dir='data/apparel-images-dataset', batch_size=64):
     # creating a list of classes
 
     # setting a set of transformations to transform the images
-    transform = T.Compose([T.Resize(128),
+    transform = T.Compose([T.Resize((224, 224)),
                            T.RandomCrop(128),
                            T.RandomHorizontalFlip(),
                            T.RandomRotation(2),
                            T.ToTensor(),
                            T.Normalize(*imagenet_stats)])
 
-    dataset = myDataset(data_dir, transform=transform)
+    dataset = GenericDataset(data_dir, transform=transform)
 
     val_percent = int(0.15 * len(dataset))  # setting 15 percent of the total number of images for validation
     train_size = len(dataset) - val_percent
     val_size = len(dataset) - train_size
 
-    train_ds, val_ds = random_split(dataset,[train_size, val_size])  # splitting the dataset for training and validation.
+    train_ds, val_ds = random_split(dataset,[train_size, val_size])  # splitting the dataset for training and validation
 
     # setting batch size for Dataloader to load the data batch by batch
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=True)

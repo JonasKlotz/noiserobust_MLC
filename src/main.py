@@ -31,7 +31,8 @@ def main(opt):
 
     # ========= Loading Dataset =========#
     opt.max_token_seq_len_d = opt.max_ar_length
-    if opt.dataset == "apparel":
+    print(f"load {opt.dataset}")
+    if opt.dataset == "data/apparel":
         train_data, valid_data, test_data, labels = load_apparel_data()
     else:
         train_data, valid_data, test_data, labels = load_data(
@@ -56,7 +57,7 @@ def main(opt):
                      label_adj_matrix=label_adj_matrix, label_mask=opt.label_mask, graph_conv=opt.graph_conv,
                      attn_type=opt.attn_type, int_preds=opt.int_preds, word2vec_weights=weights_matrix)
 
-    # print(model)
+    print(model)
     # print(opt.model_name)
 
     opt.total_num_parameters = int(utils.count_parameters(model))

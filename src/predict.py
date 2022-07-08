@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 import numpy as np
+from sklearn.metrics import average_precision_score, f1_score
 
 
 def load_model_checkpoint(model, optimizer, checkpoint_path):
@@ -38,12 +39,15 @@ def predict(model, dataloader, label_names, weights_path="results/deepglobe/5_re
         bce_loss = F.binary_cross_entropy_with_logits(pred, label)
         loss += bce_loss
         print(f"BCE LOSS {bce_loss.data.item()}")
-        from sklearn.metrics import average_precision_score
         print(f"LOSS {loss.data.item()}")
-        #print(f"macro ap {average_precision_score(label, normed_pred, average='macro')}")
-        #print(f"micro ap {average_precision_score(label, normed_pred, average='micro')}")
-        # print(f"micro f1 {f1_score(gold, normed_pred, average='micro')}")
-        # print(f"macro f1 {f1_score(gold, normed_pred, average='macro')}")
+        threshold = 0.5
+        miAP = average_precision_score(label, normed_pred, average='micro')
+        maAP = average_precision_score(label, normed_pred, average='macro')
+        threshed_predictions = normed_pred > threshold
+        miF1 = f1_score(label, threshed_predictions, average='micro')
+        maF1 = f1_score(label, threshed_predictions, average='macro')
+        print(f"macro ap {maAP}, micro ap {miAP}")
+        print(f"macro F1 {maF1}, micro F1 {miF1}")
 
         rounded_loss = np.round(bce_loss.item(), 2)
         barplot_results(normed_pred, label, label_names, loss=rounded_loss, index=i)
