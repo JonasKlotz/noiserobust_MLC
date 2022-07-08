@@ -14,6 +14,8 @@ import os
 from predict import predict
 warnings.filterwarnings("ignore")
 
+from losses import AsymmetricLoss
+
 parser = argparse.ArgumentParser()
 args = get_args(parser)
 opt = config_args(args)
@@ -69,7 +71,15 @@ def main(opt):
     adv_optimizer = None
 
     # crit is not used for our training, we still use BCE in the train and test loop
-    crit = utils.get_criterion(opt)
+    if opt.loss == 'asl':
+        print('using ASL')
+        crit = AsymmetricLoss(gamma_neg=opt.asl_ng, gamma_pos=opt.asl_pg, clip=opt.asl_clip, eps=opt.asl_eps)
+    elif opt.loss == 'bce':
+        print('using BCE from CbMLC Paper')
+        crit = nn.BCEWithLogitsLoss(reduction='mean')
+    else:
+        print('using OLD BCE / JONAS')
+        crit = utils.get_criterion(opt)
 
     ################## manage CUDA ################
     if torch.cuda.device_count() > 1 and opt.multi_gpu:

@@ -35,7 +35,7 @@ def get_args(parser):
     parser.add_argument('-no_dec_self_att', action='store_true')
     parser.add_argument('-adj_matrix_lambda', type=float, default=0.0)
     parser.add_argument('-log', default=None)
-    parser.add_argument('-loss', type=str, choices=['ce', 'adv', 'ranking'], default='ce')
+    parser.add_argument('-loss', type=str, choices=['ce', 'adv', 'ranking', 'asl'], default='ce')
     parser.add_argument('-loss2', type=str, choices=['', 'l2', 'kl'], default='')
     parser.add_argument('-adv_lambda', type=float, default=1.0)
     parser.add_argument('-adv_type', type=str, choices=['infnet', 'gan'], default='gan')
@@ -72,6 +72,10 @@ def get_args(parser):
     parser.add_argument('-attns_loss', action='store_true')
     parser.add_argument('-thresh1', type=int, default=10)
     parser.add_argument('-name', type=str, default=None)
+    parser.add_argument('-asl_pg', type=float, default=1.0)
+    parser.add_argument('-asl_ng', type=float, default=4.0)
+    parser.add_argument('-asl_eps', type=float, default=1e-8)
+    parser.add_argument('-asl_clip', type=float, default=0.05)
     opt = parser.parse_args()
     return opt
 
