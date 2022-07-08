@@ -41,7 +41,7 @@ def main(opt):
     weights_matrix = torch.FloatTensor(np.random.normal(scale=0.6, size=(opt.tgt_vocab_size, opt.d_model)))
 
     # ========= Preparing Model =========#
-    baseline = True
+    baseline = False
     if baseline:
         print("Using Resnet Baseline")
         model = ResnetBaseLine(d_model=n_output_classes, resnet_layers=18)
