@@ -470,18 +470,32 @@ class EvalsLogger:
             self.file_names['test_all_auc'] = os.path.join(args.model_name, 'test_all_auc.csv')
 
             f = open(self.file_names['train'], 'w+');
+            f.write('epoch,loss,ACC,HA,ebF1,miF1,maF1,meanAUC,medianAUC,meanAUPR,medianAUPR,meanFDR,medianFDR,time,num_params')
+            f.write('\n')
             f.close()
             f = open(self.file_names['valid'], 'w+');
+            f.write('epoch,loss,ACC,HA,ebF1,miF1,maF1,meanAUC,medianAUC,meanAUPR,medianAUPR,meanFDR,medianFDR,time,num_params')
+            f.write('\n')
             f.close()
             f = open(self.file_names['test'], 'w+');
+            f.write('epoch,loss,ACC,HA,ebF1,miF1,maF1,meanAUC,medianAUC,meanAUPR,medianAUPR,meanFDR,medianFDR,time,num_params')
+            f.write('\n')
             f.close()
             f = open(self.file_names['valid_all_aupr'], 'w+');
+            f.write('epoch,loss,ACC,HA,ebF1,miF1,maF1,meanAUC,medianAUC,meanAUPR,medianAUPR,meanFDR,medianFDR,time,num_params')
+            f.write('\n')
             f.close()
             f = open(self.file_names['valid_all_auc'], 'w+');
+            f.write('epoch,loss,ACC,HA,ebF1,miF1,maF1,meanAUC,medianAUC,meanAUPR,medianAUPR,meanFDR,medianFDR,time,num_params')
+            f.write('\n')
             f.close()
             f = open(self.file_names['test_all_aupr'], 'w+');
+            f.write('epoch,loss,ACC,HA,ebF1,miF1,maF1,meanAUC,medianAUC,meanAUPR,medianAUPR,meanFDR,medianFDR,time,num_params')
+            f.write('\n')
             f.close()
             f = open(self.file_names['test_all_auc'], 'w+');
+            f.write('epoch,loss,ACC,HA,ebF1,miF1,maF1,meanAUC,medianAUC,meanAUPR,medianAUPR,meanFDR,medianFDR,time,num_params')
+            f.write('\n')
             f.close()
             os.utime(args.model_name, None)
 

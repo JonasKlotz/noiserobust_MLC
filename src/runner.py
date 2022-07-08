@@ -45,7 +45,6 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         valid_losses += [valid_loss]
 
         ################################## TEST ###################################
-        '''
         start = time.time()
         all_predictions, all_targets, test_loss = test_epoch(model, test_data, opt, '(Testing)')
         elapsed = ((time.time() - start) / 60)
@@ -70,4 +69,3 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         loss_file.write(',' + str(valid_loss))
         loss_file.write(',' + str(test_loss))
         loss_file.write('\n')
-        '''
