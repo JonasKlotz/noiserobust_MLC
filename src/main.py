@@ -29,11 +29,11 @@ def main(opt):
 
     # ========= Loading Dataset =========#
     opt.max_token_seq_len_d = opt.max_ar_length
-    # train_data, valid_data, test_data, labels = load_data(
-    #     data_dir="data/deepglobe_patches/")
-
-    train_data, valid_data, test_data, labels = load_apparel_data()
-
+    if opt.dataset == "apparel":
+        train_data, valid_data, test_data, labels = load_apparel_data()
+    else:
+        train_data, valid_data, test_data, labels = load_data(
+            data_dir="data/deepglobe_patches/")
     n_output_classes =  len(labels)
     print(n_output_classes, labels)
     opt.tgt_vocab_size = n_output_classes  # number of labels
