@@ -128,6 +128,9 @@ def load_data(data_dir="/data/deepglobe_patches/", transformations=None):
     # Resizing because images have different sizes by default
     # Converting each image from a numpy array to a tensor (so we can do calculations on the GPU)
     # Normalizing the image as following: image = (image - mean) / std
+
+    imagenet_stats = ([0.485, 0.456, 0.406], [0.229, 0.224,0.225])
+    # mean and std values of the Imagenet Dataset so that pretrained models could also be used
     if not transformations:
         transformations = transforms.Compose([
             transforms.ToPILImage(),  # to PIL such that it can be converted to tensor
@@ -136,7 +139,8 @@ def load_data(data_dir="/data/deepglobe_patches/", transformations=None):
             # transforms.RandomVerticalFlip(p=0.3),
             # transforms.RandomHorizontalFlip(p=0.3),
             # transforms.RandomRotation(degrees=(-90, 90)),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            transforms.Normalize(*imagenet_stats)
         ])
 
     # Getting the data

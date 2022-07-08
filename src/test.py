@@ -20,7 +20,7 @@ def test_epoch(model, test_data, opt, description):
 
         batch_loc = int(batch_idx * batch_size)
 
-        pred, enc_output, *results = model(img, int_preds=opt.int_preds)
+        pred, enc_output, *results = model(img)
 
 
 
@@ -28,9 +28,9 @@ def test_epoch(model, test_data, opt, description):
         norm_pred = F.sigmoid(pred).data
         # print(f"Shape norm pred {norm_pred.shape} end index { ((batch_idx + 1) * batch_size)}")
         # pos_weight = torch.tensor([5.8611238, 1.21062702, 5.82371649, 9.89122553,
-        #                            14.41991786, 9.75859599, 173.63953488])
-        # bce_loss = F.binary_cross_entropy_with_logits(pred, gold, reduction='mean', pos_weight=pos_weight)
-
+        #                             14.41991786, 9.75859599, 1])#173.63953488])
+        # bce_loss = F.binary_cross_entropy_with_logits(pred, labels, reduction='mean', pos_weight=pos_weight)
+        #
         bce_loss = F.binary_cross_entropy_with_logits(pred, labels, reduction='mean')
         bce_total += bce_loss.item()
 

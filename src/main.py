@@ -5,7 +5,8 @@ import utils.utils as utils
 import torch, torch.nn as nn
 
 from data_pipeline.lmdb_dataloader import load_data
-from lamp.Models import LAMP
+from data_pipeline.other_dataloaders import load_apparel_data
+from lamp.Models import LAMP, ResnetBaseLine
 from config_args import config_args, get_args
 from runner import run_model
 import numpy as np
@@ -25,21 +26,30 @@ def main(opt):
 
     # ========= Loading Dataset =========#
     opt.max_token_seq_len_d = opt.max_ar_length
-    train_data, valid_data, test_data, labels = load_data(
-        data_dir="data/deepglobe_patches/")
+    # train_data, valid_data, test_data, labels = load_data(
+    #     data_dir="data/deepglobe_patches/")
 
-    opt.tgt_vocab_size = len(labels)  # number of labels
+    train_data, valid_data, test_data, labels = load_apparel_data()
+
+    n_output_classes =  len(labels)
+    print(n_output_classes, labels)
+    opt.tgt_vocab_size = n_output_classes  # number of labels
     label_adj_matrix = torch.ones(opt.tgt_vocab_size, opt.tgt_vocab_size)  # full graph
     weights_matrix = torch.FloatTensor(np.random.normal(scale=0.6, size=(opt.tgt_vocab_size, opt.d_model)))
 
     # ========= Preparing Model =========#
-    model = LAMP(opt.tgt_vocab_size, opt.max_token_seq_len_d, n_layers_dec=opt.n_layers_dec, n_head=opt.n_head,
-                 n_head2=opt.n_head2, d_word_vec=opt.d_model, d_model=opt.d_model, d_inner_hid=opt.d_inner_hid,
-                 d_k=opt.d_k, d_v=opt.d_v, dec_dropout=opt.dec_dropout, dec_dropout2=opt.dec_dropout2,
-                 proj_share_weight=opt.proj_share_weight, encoder=opt.encoder, decoder=opt.decoder,
-                 enc_transform=opt.enc_transform, onehot=opt.onehot, no_dec_self_att=opt.no_dec_self_att, loss=opt.loss,
-                 label_adj_matrix=label_adj_matrix, label_mask=opt.label_mask, graph_conv=opt.graph_conv,
-                 attn_type=opt.attn_type, int_preds=opt.int_preds, word2vec_weights=weights_matrix)
+    baseline = True
+    if baseline:
+        print("Using Resnet Baseline")
+        model = ResnetBaseLine(d_model=n_output_classes, resnet_layers=18)
+    else:
+        model = LAMP(opt.tgt_vocab_size, opt.max_token_seq_len_d, n_layers_dec=opt.n_layers_dec, n_head=opt.n_head,
+                     n_head2=opt.n_head2, d_word_vec=opt.d_model, d_model=opt.d_model, d_inner_hid=opt.d_inner_hid,
+                     d_k=opt.d_k, d_v=opt.d_v, dec_dropout=opt.dec_dropout, dec_dropout2=opt.dec_dropout2,
+                     proj_share_weight=opt.proj_share_weight, encoder=opt.encoder, decoder=opt.decoder,
+                     enc_transform=opt.enc_transform, onehot=opt.onehot, no_dec_self_att=opt.no_dec_self_att, loss=opt.loss,
+                     label_adj_matrix=label_adj_matrix, label_mask=opt.label_mask, graph_conv=opt.graph_conv,
+                     attn_type=opt.attn_type, int_preds=opt.int_preds, word2vec_weights=weights_matrix)
 
     # print(model)
     # print(opt.model_name)
@@ -72,7 +82,7 @@ def main(opt):
     ######################## Load a model  ##########################
     if opt.predict == True:
         print("============== Predict ======================")
-        predict(model, valid_data, labels, weights_path="results/deepglobe/8_epoch/model.chkpt", n=5)
+        predict(model, valid_data, labels, weights_path="results/deepglobe/enc_resnet.dec_graph.300.512.75.75.nlayers_5_4.nheads_4.proj_share.bsz_1.loss_ce.adam.lr_002.drop_10_10.priormask/model.chkpt", n=5)
 
 
     else:

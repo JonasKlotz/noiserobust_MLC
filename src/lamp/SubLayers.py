@@ -44,26 +44,36 @@ class ScaledDotProductAttention(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, n_head, d_model, d_k, d_v, dropout=0.1, dropout2=False, attn_type='softmax'):
+    def __init__(self, n_head, d_model, dim_key, d_v, dropout=0.1, dropout2=False, attn_type='softmax'):
+        """
+
+        :param n_head: wie genau wird die attention berechnet
+        :param d_model:
+        :param dim_key:
+        :param d_v:
+        :param dropout:
+        :param dropout2:
+        :param attn_type:
+        """
         super().__init__()
 
         self.n_head = n_head
-        self.d_k = d_k
+        self.d_k = dim_key
         self.d_v = d_v
 
-        self.w_qs = nn.Linear(d_model, n_head * d_k, bias=False)
-        self.w_ks = nn.Linear(d_model, n_head * d_k, bias=False)
+        self.w_qs = nn.Linear(d_model, n_head * dim_key, bias=False)
+        self.w_ks = nn.Linear(d_model, n_head * dim_key, bias=False)
         self.w_vs = nn.Linear(d_model, n_head * d_v, bias=False)
-        nn.init.normal_(self.w_qs.weight, mean=0, std=np.sqrt(2.0 / (d_model + d_k)))
-        nn.init.normal_(self.w_ks.weight, mean=0, std=np.sqrt(2.0 / (d_model + d_k)))
+        nn.init.normal_(self.w_qs.weight, mean=0, std=np.sqrt(2.0 / (d_model + dim_key)))
+        nn.init.normal_(self.w_ks.weight, mean=0, std=np.sqrt(2.0 / (d_model + dim_key)))
         nn.init.normal_(self.w_vs.weight, mean=0, std=np.sqrt(2.0 / (d_model + d_v)))
 
         if dropout2:
             # self.dropout2 = nn.Dropout(dropout2)
-            self.attention = ScaledDotProductAttention(temperature=np.power(d_k, 0.5), attn_type=attn_type,
+            self.attention = ScaledDotProductAttention(temperature=np.power(dim_key, 0.5), attn_type=attn_type,
                                                        dropout=dropout2)
         else:
-            self.attention = ScaledDotProductAttention(temperature=np.power(d_k, 0.5), attn_type=attn_type,
+            self.attention = ScaledDotProductAttention(temperature=np.power(dim_key, 0.5), attn_type=attn_type,
                                                        dropout=dropout)
 
         self.dropout = nn.Dropout(dropout)
