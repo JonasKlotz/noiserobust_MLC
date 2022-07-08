@@ -356,6 +356,9 @@ def compute_metrics(all_predictions, all_targets, loss, args, elapsed, all_metri
     :return:
 
     """
+
+    loss = round(loss, 5)
+
     all_targets = all_targets.numpy()
     all_predictions = all_predictions.numpy()
 
@@ -389,8 +392,8 @@ def compute_metrics(all_predictions, all_targets, loss, args, elapsed, all_metri
     tp, fp, fn = compute_tp_fp_fn(all_targets, all_predictions, axis=0)
     mif1 = f1_score_from_stats(tp, fp, fn, average='micro')
     maf1 = f1_score_from_stats(tp, fp, fn, average='macro')
-    print(f"macro ap {average_precision_score(all_targets, all_predictions, average='macro')}")
-    print(f"micro ap {average_precision_score(all_targets, all_predictions, average='micro')}")
+    # print(f"macro ap {average_precision_score(all_targets, all_predictions, average='macro')}")
+    # print(f"micro ap {average_precision_score(all_targets, all_predictions, average='micro')}")
     eval_ret = OrderedDict([('Subset accuracy', acc),
                             ('Hamming accuracy', 1 - hl),
                             ('Example-based F1', exf1),
@@ -403,16 +406,16 @@ def compute_metrics(all_predictions, all_targets, loss, args, elapsed, all_metri
     miF1 = eval_ret['Label-based Micro F1']
     maF1 = eval_ret['Label-based Macro F1']
     if verbose:
-        print('ACC:   ' + str(ACC))
-        print('HA:    ' + str(HA))
-        print('ebF1:  ' + str(ebF1))
-        print('miF1:  ' + str(miF1))
-        print('maF1:  ' + str(maF1))
-        print('uAUC:  ' + str(meanAUC))
+        print(f'ACC:  {ACC: .3f}')
+        # print('HA:    ' + str(HA))
+        # print('ebF1:  ' + str(ebF1))
+        # print('miF1:  ' + str(miF1))
+        # print('maF1:  ' + str(maF1))
+        # print('uAUC:  ' + str(meanAUC))
         # print('mAUC:  '+str(medianAUC))
-        print('uAUPR: ' + str(meanAUPR))
+        # print('uAUPR: ' + str(meanAUPR))
         # print('mAUPR: '+str(medianAUPR))
-        print('uFDR: ' + str(meanFDR))
+        # print('uFDR: ' + str(meanFDR))
         # print('mFDR:  '+str(medianFDR))
 
     metrics_dict = {}
@@ -431,6 +434,10 @@ def compute_metrics(all_predictions, all_targets, loss, args, elapsed, all_metri
     metrics_dict['medianFDR'] = medianFDR
     metrics_dict['loss'] = loss
     metrics_dict['time'] = elapsed
+
+    for key, value in metrics_dict.items():
+        if type(value) is float:
+            metrics_dict[key] = round(value, 3)
 
     return metrics_dict
 
@@ -585,13 +592,13 @@ class EvalsLogger:
         print('\n')
         print('**********************************')
         print('best ACC:  ' + str(self.best_valid['ACC']))
-        print('best HA:   ' + str(self.best_valid['HA']))
-        print('best ebF1: ' + str(self.best_valid['ebF1']))
+        # print('best HA:   ' + str(self.best_valid['HA']))
+        # print('best ebF1: ' + str(self.best_valid['ebF1']))
         print('best miF1: ' + str(self.best_valid['miF1']))
         print('best maF1: ' + str(self.best_valid['maF1']))
-        print('best meanAUC:  ' + str(self.best_valid['meanAUC']))
-        print('best meanAUPR: ' + str(self.best_valid['meanAUPR']))
-        print('best meanFDR: ' + str(self.best_valid['meanFDR']))
+        # print('best meanAUC:  ' + str(self.best_valid['meanAUC']))
+        # print('best meanAUPR: ' + str(self.best_valid['meanAUPR']))
+        # print('best meanFDR: ' + str(self.best_valid['meanFDR']))
         print('**********************************')
 
         return self.best_valid, self.best_test

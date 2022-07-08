@@ -10,6 +10,7 @@ from lamp.Models import LAMP, ResnetBaseLine
 from config_args import config_args, get_args
 from runner import run_model
 import numpy as np
+import os
 from predict import predict
 warnings.filterwarnings("ignore")
 
@@ -22,6 +23,8 @@ from wordembedding.glove import Glove
 def main(opt):
 
     # Printing Debug Information
+    os.environ["CUDA_VISIBLE_DEVICES"] = ""
+    torch.cuda.is_available = lambda: False
     print("Cuda is available:", torch.cuda.is_available())
 
     # ========= Loading Dataset =========#

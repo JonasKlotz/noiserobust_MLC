@@ -22,10 +22,14 @@ class RESNETEncoder(nn.Module):
         self.model.fc = nn.Linear(num_ftrs, d_model) # out features are model dim
 
 
-
     def forward(self, img):
         x = self.model(img)
         print(x.shape)
         output = x.view(img.size(0), 1, -1) # why this transformation??
+<<<<<<< HEAD
 
+=======
+        _output = output.detach().numpy().reshape(-1, output.size(2))
+        _img = img.detach().numpy()[:,0,:,:].reshape(-1, img.size(2)*img.size(3))
+>>>>>>> b1a3e7a522506fe8d91d036539ba0d077b661690
         return output
