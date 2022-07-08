@@ -65,9 +65,11 @@ def main(opt):
     if opt.load_emb:
         model = utils.load_embeddings(model, '../../Data/word_embedding_dict.pth')
 
-    optimizer = torch.optim.Adam(model.get_trainable_parameters(), betas=(0.9, 0.98), lr=opt.lr)
-    scheduler = torch.torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.lr_step_size, gamma=opt.lr_decay,
-                                                      last_epoch=-1)
+    if opt.optim == 'adam':
+        optimizer = torch.optim.Adam(model.get_trainable_parameters(),betas=(0.9, 0.999),lr=opt.lr, weight_decay=1e-5)
+    elif opt.optim == 'sgd':
+        optimizer = torch.optim.SGD(model.get_trainable_parameters(), lr=opt.lr, weight_decay=opt.weight_decay, momentum=opt.momentum) 
+    scheduler = torch.torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.lr_step_size, gamma=opt.lr_decay,last_epoch=-1)
 
     adv_optimizer = None
 
