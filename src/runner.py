@@ -4,13 +4,14 @@ import utils.utils as utils
 import torch
 from train import train_epoch
 from test import test_epoch
+from sklearn.metrics import average_precision_score, f1_score
 
 warnings.filterwarnings("ignore")
 
 
 def run_model(model, train_data, valid_data, test_data, crit, optimizer, scheduler, opt):
     eval_logger = evals.EvalsLogger(opt)
-
+    threshold = 0.5
     valid_losses = []
 
     losses = []
@@ -28,6 +29,13 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         # print('\n(Training) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
         train_loss = train_loss / len(train_data)
         print(f'train_loss : {train_loss: .4f}')
+        miAP = average_precision_score(all_targets, all_predictions, average='micro')
+        maAP = average_precision_score(all_targets, all_predictions, average='macro')
+        threshed_predictions = all_predictions > threshold
+        miF1 = f1_score(all_targets, threshed_predictions, average='micro')
+        maF1 = f1_score(all_targets, threshed_predictions, average='macro')
+        print(f"macro ap {maAP}, micro ap {miAP}")
+        print(f"macro F1 {maF1}, micro F1 {miF1}")
 
         train_metrics = evals.compute_metrics(all_predictions, all_targets, 0, opt, elapsed, all_metrics=True)
 
@@ -38,6 +46,13 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         # print('\n(Validation) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
         valid_loss = valid_loss / (valid_data.__len__())
         print(f'valid_loss : {valid_loss: .4f}')
+        miAP = average_precision_score(all_targets, all_predictions, average='micro')
+        maAP = average_precision_score(all_targets, all_predictions, average='macro')
+        threshed_predictions = all_predictions > threshold
+        miF1 = f1_score(all_targets, threshed_predictions, average='micro')
+        maF1 = f1_score(all_targets, threshed_predictions, average='macro')
+        print(f"macro ap {maAP}, micro ap {miAP}")
+        print(f"macro F1 {maF1}, micro F1 {miF1}")
 
         torch.save(all_predictions, path.join(opt.model_name, 'epochs', 'valid_preds' + str(epoch_i + 1) + '.pt'))
         torch.save(all_targets, path.join(opt.model_name, 'epochs', 'valid_targets' + str(epoch_i + 1) + '.pt'))
@@ -51,6 +66,13 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         print('\n(Testing) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
         test_loss = test_loss / (test_data.__len__())
         print('test_loss : ' + str(test_loss))
+        miAP = average_precision_score(all_targets, all_predictions, average='micro')
+        maAP = average_precision_score(all_targets, all_predictions, average='macro')
+        threshed_predictions = all_predictions > threshold
+        miF1 = f1_score(all_targets, threshed_predictions, average='micro')
+        maF1 = f1_score(all_targets, threshed_predictions, average='macro')
+        print(f"macro ap {maAP}, micro ap {miAP}")
+        print(f"macro F1 {maF1}, micro F1 {miF1}")
 
         torch.save(all_predictions, path.join(opt.model_name, 'epochs', 'test_preds' + str(epoch_i + 1) + '.pt'))
         torch.save(all_targets, path.join(opt.model_name, 'epochs', 'test_targets' + str(epoch_i + 1) + '.pt'))
