@@ -235,12 +235,4 @@ def config_args(opt):
     opt.binary_relevance = True
 
     print(opt.model_name)
-
-    if (not opt.viz) and (not opt.overwrite) and (not 'test' in opt.model_name) and (path.exists(opt.model_name)) and (
-    not opt.load_pretrained):
-        overwrite_status = "y"
-        if overwrite_status == 'rm':
-            os.system('rm -rf ' + opt.model_name)
-        elif not 'y' in overwrite_status:
-            exit(0)
     return opt

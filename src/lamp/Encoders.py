@@ -24,7 +24,6 @@ class RESNETEncoder(nn.Module):
 
     def forward(self, img):
         x = self.model(img)
+        print(x.shape)
         output = x.view(img.size(0), 1, -1) # why this transformation??
-        _output = output.detach().numpy().reshape(-1, output.size(2))
-        _img = img.detach().numpy()[:,0,:,:].reshape(-1, img.size(2)*img.size(3))
         return output

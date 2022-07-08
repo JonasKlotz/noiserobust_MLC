@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torchvision import models
 import torch.nn.functional as F
 import numpy as np
 import lamp.Constants as Constants
@@ -71,7 +72,6 @@ class LAMP(nn.Module):
             label_mask=label_mask, enc_vec=self.enc_vec, attn_type=attn_type, word2vec_weights=word2vec_weights,
             freeze_emb=freeze_emb)
 
-
         bias = False
         if self.decoder_type in ['graph'] and not proj_share_weight:
             bias = True
@@ -102,7 +102,7 @@ class LAMP(nn.Module):
     def forward(self, src, return_attns=False, int_preds=False):
         original_size = src.shape
         batch_size = original_size[0]
-        #print(f"\nModel input is a tensor of size {original_size}")
+        # print(f"\nModel input is a tensor of size {original_size}")
 
         enc_output = self.encoder(src)
 
@@ -122,9 +122,38 @@ class LAMP(nn.Module):
             return seq_logit.view(-1, seq_logit.size(-1)), enc_output, intermediate_preds
 
         elif return_attns:
-            return seq_logit.view(-1, seq_logit.size(-1)), enc_output, None , dec_output2
+            return seq_logit.view(-1, seq_logit.size(-1)), enc_output, None, dec_output2
 
         else:
             return seq_logit.view(-1, seq_logit.size(-1)), enc_output, None
 
 
+class ResnetBaseLine(nn.Module):
+    def __init__(
+            self, d_model=300, pretrained=True, resnet_layers=18, freeze=False):
+        super(ResnetBaseLine, self).__init__()
+        if resnet_layers == 18:
+            self.model = models.resnet18(pretrained=pretrained)
+        elif resnet_layers == 50:
+            self.model = models.resnet50(pretrained=pretrained)
+        else:
+            self.model = models.resnet101(pretrained=pretrained)
+
+        # add last layer
+        num_ftrs = self.model.fc.in_features  # in features
+        if freeze:
+            for param in self.model.parameters():
+                param.requires_grad = False
+        else:
+            for param in self.model.parameters():
+                param.requires_grad = True
+
+        self.model.fc = nn.Linear(num_ftrs, d_model)  # out features are model dim
+
+    def get_trainable_parameters(self):
+        ''' Avoid updating the position encoding '''
+        return self.model.parameters()
+
+    def forward(self, img):
+        x = self.model(img)
+        return x, None, None #
