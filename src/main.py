@@ -77,12 +77,9 @@ def main(opt):
     if opt.loss == 'asl':
         print('using ASL')
         crit = AsymmetricLoss(gamma_neg=opt.asl_ng, gamma_pos=opt.asl_pg, clip=opt.asl_clip, eps=opt.asl_eps)
-    elif opt.loss == 'bce':
-        print('using BCE from CbMLC Paper')
-        crit = nn.BCEWithLogitsLoss(reduction='mean')
     else:
-        print('using OLD BCE / JONAS')
-        crit = utils.get_criterion(opt)
+        print('using BCE ')
+        crit = nn.BCEWithLogitsLoss(reduction='mean')
 
     ################## manage CUDA ################
     if torch.cuda.device_count() > 1 and opt.multi_gpu:

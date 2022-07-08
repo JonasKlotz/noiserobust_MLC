@@ -28,8 +28,9 @@ def train_epoch(model, train_data, crit, optimizer, opt, epoch):
         #                             14.41991786, 9.75859599, 1])#173.63953488
         # # remove unknown class
         # bce_loss = F.binary_cross_entropy_with_logits(norm_pred, labels, reduction='mean', pos_weight=pos_weight)
-        bce_loss = F.binary_cross_entropy_with_logits(pred, labels, reduction='mean')
+        #bce_loss = F.binary_cross_entropy_with_logits(pred, labels, reduction='mean')
         #with logits uses a sigmoid before calculating the loss
+        bce_loss =crit(pred, labels)
         loss += bce_loss
         bce_total += bce_loss.item()
 

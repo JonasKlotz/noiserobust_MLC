@@ -23,8 +23,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
 
         ################################## TRAIN ###################################
         start = time.time()
-        all_predictions, all_targets, train_loss = train_epoch(model, train_data, crit, optimizer, opt,
-                                                                    epoch=epoch_i)
+        all_predictions, all_targets, train_loss = train_epoch(model, train_data, crit, optimizer, opt, epoch_i)
         elapsed = ((time.time() - start) / 60)
         # print('\n(Training) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
         train_loss = train_loss / len(train_data)
@@ -41,7 +40,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
 
         ################################### VALID ###################################
         start = time.time()
-        all_predictions, all_targets, valid_loss = test_epoch(model, valid_data, opt, '(Validation)')
+        all_predictions, all_targets, valid_loss = test_epoch(model, valid_data,crit, opt, '(Validation)')
         elapsed = ((time.time() - start) / 60)
         # print('\n(Validation) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
         valid_loss = valid_loss / (valid_data.__len__())
@@ -61,7 +60,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
 
         ################################## TEST ###################################
         start = time.time()
-        all_predictions, all_targets, test_loss = test_epoch(model, test_data, opt, '(Testing)')
+        all_predictions, all_targets, test_loss = test_epoch(model, test_data,crit, opt, '(Testing)')
         elapsed = ((time.time() - start) / 60)
         print('\n(Testing) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
         test_loss = test_loss / (test_data.__len__())
