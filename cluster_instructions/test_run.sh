@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J test	# Job Name
+#SBATCH -J ASL_TRAINING	# Job Name
 
 #SBATCH --nodes=1               # Anzahl Knoten N
 #SBATCH --ntasks-per-node=5     # Prozesse n pro Knoten
@@ -8,28 +8,29 @@
 #SBATCH --mem=10G              # 500MiB resident memory pro node
 
 ##Max Walltime vorgeben:
-#SBATCH --time=00:05:00 # Erwartete Laufzeit
+#SBATCH --time=80:00:00 # Erwartete Laufzeit
 
 #Auf Standard-Knoten rechnen:
 #SBATCH --partition=standard
 ##SBATCH --gres=gpu:tesla:1                      # Use 1 GPU per node
 
 
-#SBATCH -o logs/logfile                  # send stdout to outfile
-#SBATCH -e logs/errfile                  # send stderr to errfile
+#SBATCH -o logfile                  # send stdout to outfile
+#SBATCH -e errfile                  # send stderr to errfile
 
-module load python/3.7.1 
+module load python/3.7.4
 module load comp/gcc/7.2.0
 module load nvidia/cuda/11.2
 module load nvidia/cudnn/9.0 
 
 
 ##cd
-source /home/users/j/jonasklotz/remotesensing/rs_env/bin/activate
+source /home/users/j/jonasklotz/rs_env/bin/activate
 
 echo Start
 
-##chmod +x ~workingModel.py
+python3 /home/users/j/jonasklotz/remotesensing/src/main.py -model resnet_base -dataset deepglobe -d_model 50 -epoch 50 -lr 0.0001 -loss asl -optim adam
+python3 /home/users/j/jonasklotz/remotesensing/src/main.py -model lamp -dataset deepglobe -d_model 50 -epoch 50 -lr 0.0001 -loss asl -optim adam
+python3 /home/users/j/jonasklotz/remotesensing/src/main.py -model CbMLC -dataset deepglobe -d_model 50 -epoch 50 -lr 0.0001 -loss asl -optim adam
 
-python3 cuda_test.py
 

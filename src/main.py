@@ -1,3 +1,7 @@
+# for cluster
+import sys
+sys.path.append("/home/users/j/jonasklotz/remotesensing")
+
 import argparse, warnings
 import torch.nn.functional as F
 
@@ -20,7 +24,7 @@ from losses import AsymmetricLoss
 parser = argparse.ArgumentParser()
 args = get_args(parser)
 opt = config_args(args)
-from wordembedding.glove import Glove
+from wordembedding.glove import load_word_embeddings
 
 
 def main(opt):
@@ -45,12 +49,24 @@ def main(opt):
     weights_matrix = torch.FloatTensor(np.random.normal(scale=0.6, size=(opt.tgt_vocab_size, opt.d_model)))
 
     # ========= Preparing Model =========#
-    baseline = False
-    if baseline:
-        print("Using Resnet Baseline")
+    print(f"Using Model: {opt.model}")
+    if opt.model == "resnet_base":
         model = ResnetBaseLine(d_model=n_output_classes, resnet_layers=18)
     else:
-        print("Using CbMLC")
+        if opt.model == "lamp":
+            # load node embeddings from gauss distribution
+            weights_matrix = torch.FloatTensor(np.random.normal(scale=0.6, size=(opt.tgt_vocab_size, opt.d_model)))
+        else:
+            # load node embeddings from glove
+            try:
+                weights_matrix = torch.from_numpy(
+                    load_word_embeddings(data_path="data/glove", dim=opt.d_model, labels=labels)) \
+                    .to(torch.float32)
+            except FileNotFoundError as e:
+                print(f"ERROR: Glovefile not found {e}\n"
+                      f"defaulting to normal distributed weights")
+                weights_matrix = torch.FloatTensor(np.random.normal(scale=0.6, size=(opt.tgt_vocab_size, opt.d_model)))
+
         model = LAMP(opt.tgt_vocab_size, opt.max_token_seq_len_d, n_layers_dec=opt.n_layers_dec, n_head=opt.n_head,
                      n_head2=opt.n_head2, d_word_vec=opt.d_model, d_model=opt.d_model, d_inner_hid=opt.d_inner_hid,
                      d_k=opt.d_k, d_v=opt.d_v, dec_dropout=opt.dec_dropout, dec_dropout2=opt.dec_dropout2,
@@ -106,8 +122,8 @@ def main(opt):
     ######################## Load a model  ##########################
     if opt.predict == True:
         predict(model, valid_data, labels, crit, weights_path="results/" +
-                  "deepglobe/deepglobe.glove_d_300.epochs_5.loss_ce.adam.lr_0001" +
-                  "/model.chkpt", n=5)
+                                                              "deepglobe/deepglobe.glove_d_300.epochs_5.loss_ce.adam.lr_0001" +
+                                                              "/model.chkpt", n=5)
 
 
     else:
