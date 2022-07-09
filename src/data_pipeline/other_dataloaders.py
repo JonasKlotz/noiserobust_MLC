@@ -10,7 +10,7 @@ import torchvision.transforms as T
 import torch.nn.functional as F
 import torch.nn as nn
 from torchvision.utils import make_grid
-from data_pipeline.lmdb_dataloader import DeviceDataLoader
+from data_pipeline.lmdb_dataloader import DeviceDataLoader, get_default_device, to_device
 import os
 import re
 import requests
@@ -24,7 +24,6 @@ classes = ['black', 'blue', 'brown', 'green', 'white', 'red', 'dress', 'pants', 
 imagenet_stats = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
 
-# mean and std values of the Imagenet Dataset so that pretrained models could also be used
 
 
 def encode_label(label, classes_list=classes):  # encoding the classes into a tensor of shape (11) with 0 and 1s.
@@ -87,23 +86,7 @@ def show_example(img, label):
     print(label)
 
 
-# helper functions to load the data and model onto GPU
-def get_default_device():
-    """Pick GPU if available, else CPU"""
-    if torch.cuda.is_available():
-        return torch.device('cuda')
-    else:
-        return torch.device('cpu')
-
-
-def to_device(data, device):
-    """Move tensor(s) to chosen device"""
-    if isinstance(data, (list, tuple)):
-        return [to_device(x, device) for x in data]
-    return data.to(device, non_blocking=True)
-
-
-def load_apparel_data(data_dir='data/apparel-images-dataset', batch_size=64):
+def load_data_from_dir(data_dir='data/apparel-images-dataset', batch_size=64):
     # creating a list of classes
 
     # setting a set of transformations to transform the images

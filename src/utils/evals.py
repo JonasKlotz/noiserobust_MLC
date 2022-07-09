@@ -376,11 +376,9 @@ def compute_metrics(all_predictions, all_targets, loss, args, elapsed, all_metri
     # optimal_thresholds = Find_Optimal_Cutoff(all_targets,all_predictions)
     # optimal_threshold = numpy.mean(numpy.array(optimal_thresholds))
 
-    if args.decoder in ['mlp', 'rnn_b', 'graph']:
-        all_predictions[all_predictions < optimal_threshold] = 0
-        all_predictions[all_predictions >= optimal_threshold] = 1
-    else:
-        all_predictions[all_predictions > 0.0] = 1
+    all_predictions[all_predictions < optimal_threshold] = 0
+    all_predictions[all_predictions >= optimal_threshold] = 1
+
 
     acc_ = list(subset_accuracy(all_targets, all_predictions, axis=1, per_sample=True))
     hl_ = list(hamming_loss(all_targets, all_predictions, axis=1, per_sample=True))

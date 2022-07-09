@@ -18,7 +18,7 @@ import copy
 class LAMP(nn.Module):
     def __init__(self, n_tgt_vocab, n_max_seq_d, n_layers_dec=6, n_head=8, n_head2=8, d_word_vec=512, d_model=512,
                  d_inner_hid=1024, d_k=64, d_v=64, dec_dropout=0.1, dec_dropout2=0.1, proj_share_weight=True,
-                 encoder='selfatt', decoder='sa_m', enc_transform='', onehot=False,
+                  enc_transform='', onehot=False,
                  no_dec_self_att=False, loss='ce', label_adj_matrix=None, label_mask=None, graph_conv=False,
                  attn_type='softmax', int_preds=False, word2vec_weights: torch.FloatTensor = None, freeze_emb=False):
         """
@@ -50,12 +50,11 @@ class LAMP(nn.Module):
         """
 
         super(LAMP, self).__init__()
-        self.decoder_type = decoder
         self.onehot = onehot
         self.loss = loss
 
         self.enc_vec = False
-        if encoder == 'mlp' or enc_transform != '':
+        if enc_transform != '':
             self.enc_vec = True
 
         ############# Encoder ###########
@@ -73,19 +72,19 @@ class LAMP(nn.Module):
             freeze_emb=freeze_emb)
 
         bias = False
-        if self.decoder_type in ['graph'] and not proj_share_weight:
+        if  not proj_share_weight:
             bias = True
 
         assert d_model == d_word_vec
 
-        if self.decoder_type != 'mlp':
-            if proj_share_weight:
-                self.tgt_word_proj = XavierLinear(d_model, n_tgt_vocab, bias=bias)
-                self.tgt_word_proj.weight = self.decoder.tgt_word_emb.weight
-            else:
-                self.tgt_word_proj = XavierLinear(d_model, 1, bias=bias)
-            if int_preds:
-                self.tgt_word_proj_copy = XavierLinear(d_model, n_tgt_vocab, bias=bias)
+
+        if proj_share_weight:
+            self.tgt_word_proj = XavierLinear(d_model, n_tgt_vocab, bias=bias)
+            self.tgt_word_proj.weight = self.decoder.tgt_word_emb.weight
+        else:
+            self.tgt_word_proj = XavierLinear(d_model, 1, bias=bias)
+        if int_preds:
+            self.tgt_word_proj_copy = XavierLinear(d_model, n_tgt_vocab, bias=bias)
 
     def get_trainable_parameters(self):
         ''' Avoid updating the position encoding '''

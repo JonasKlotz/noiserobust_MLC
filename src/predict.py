@@ -2,6 +2,7 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 from sklearn.metrics import average_precision_score, f1_score
+from utils.image_utils import show, barplot_results, plot_img_and_bars
 
 
 def load_model_checkpoint(model, optimizer, checkpoint_path):
@@ -12,7 +13,7 @@ def load_model_checkpoint(model, optimizer, checkpoint_path):
     loss = checkpoint['loss']
 
 
-def predict(model, dataloader, label_names, weights_path="results/deepglobe/5_res/model.chkpt", n=5):
+def predict(model, dataloader, label_names, crit, weights_path="/model.chkpt", n=32):
     print(f"================= PREDICT ==============")
     checkpoint = torch.load(weights_path)
     model.load_state_dict(checkpoint['model'])
@@ -20,35 +21,26 @@ def predict(model, dataloader, label_names, weights_path="results/deepglobe/5_re
     ################# predict #################
     batch = next(iter(dataloader))
     imgs, labels = batch
-    print(imgs[0].shape, labels[0].shape)
-    loss = 0
-    for i in range(n):
+    all_pred, enc_output, *results = model(imgs)
+    labels = labels.to(torch.float)
+    normed_pred_all = F.sigmoid(all_pred).data
+    bce_loss = crit(all_pred, labels)
+    rounded_loss = np.round(bce_loss.item(), 2)
+    print(f"BATCH BCE LOSS {rounded_loss}")
 
-        img, label = imgs[i], labels[i]
-        img, label = img[None,:], label[None,:]
-        print(img.shape, label.shape)
-        from utils.image_utils import show, barplot_results
-        show(img, index=i)
-        pred, enc_output, *results = model(img)
-        label = label.to(torch.float)
-        normed_pred = F.sigmoid(pred).data
-        # create a weighting for our inbalanced datset
-        # pos_weight = torch.tensor([5.8611238, 1.21062702, 5.82371649, 9.89122553,
-        #                            14.41991786, 9.75859599, 173.63953488])
-        # weight_bce_loss = F.binary_cross_entropy_with_logits(pred, gold, reduction='mean', pos_weight=pos_weight)
-        bce_loss = F.binary_cross_entropy_with_logits(pred, label)
-        loss += bce_loss
-        print(f"BCE LOSS {bce_loss.data.item()}")
-        print(f"LOSS {loss.data.item()}")
-        threshold = 0.5
-        miAP = average_precision_score(label, normed_pred, average='micro')
-        maAP = average_precision_score(label, normed_pred, average='macro')
-        threshed_predictions = normed_pred > threshold
-        miF1 = f1_score(label, threshed_predictions, average='micro')
-        maF1 = f1_score(label, threshed_predictions, average='macro')
-        print(f"macro ap {maAP}, micro ap {miAP}")
-        print(f"macro F1 {maF1}, micro F1 {miF1}")
+    threshold = 0.5
+    miAP = average_precision_score(labels, normed_pred_all, average='micro')
+    maAP = average_precision_score(labels, normed_pred_all, average='macro')
+    threshed_predictions = normed_pred_all > threshold
+    miF1 = f1_score(labels, threshed_predictions, average='micro')
+    maF1 = f1_score(labels, threshed_predictions, average='macro')
+    print(f"BATCH macro ap {maAP}, micro ap {miAP}")
+    print(f"BATCH macro F1 {maF1}, micro F1 {miF1}")
 
+
+    for i in range (n):
+        img, label = imgs[i][None,:], labels[i][None,:]
+        pred, normed_pred = all_pred[i][None,:], normed_pred_all[i][None,:]
+        bce_loss = crit(pred, label)
         rounded_loss = np.round(bce_loss.item(), 2)
-        barplot_results(normed_pred, label, label_names, loss=rounded_loss, index=i)
-        # print(f"Shape norm pred {norm_pred.shape} end index { ((batch_idx + 1) * batch_size)}")
+        plot_img_and_bars(img, normed_pred, label, label_names, loss=rounded_loss, index=i)

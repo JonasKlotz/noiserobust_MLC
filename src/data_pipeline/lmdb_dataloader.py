@@ -123,7 +123,7 @@ class DeviceDataLoader():
         return self.dl.batch_size
 
 
-def load_data(data_dir="/data/deepglobe_patches/", transformations=None):
+def load_data_from_lmdb(data_dir="/data/deepglobe_patches/", transformations=None, batch_size=64):
     # Pre-processing for our images
     # Resizing because images have different sizes by default
     # Converting each image from a numpy array to a tensor (so we can do calculations on the GPU)
@@ -153,10 +153,10 @@ def load_data(data_dir="/data/deepglobe_patches/", transformations=None):
     train_data, val_data = torch.utils.data.random_split(train_data, [train_size, test_size])
 
     # Create the dataloader for each dataset
-    train_loader = DataLoader(train_data, batch_size=32, shuffle=True,
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True,
                               num_workers=0, drop_last=True)
 
-    val_loader = DataLoader(val_data, batch_size=32, shuffle=False,
+    val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=False,
                             num_workers=0, drop_last=True)
     # test_loader = DataLoader(test_data, batch_size=1, shuffle=False,
     #                        num_workers=1, drop_last=True)
@@ -174,7 +174,7 @@ if __name__ == '__main__':
     for sample in dataloader:
         print(sample)
 
-    tl, vl,test_loader, labels = load_data()
+    tl, vl,test_loader, labels = load_data_from_lmdb()
     for batch in tqdm(tl, mininterval=0.5, desc='(Training)', leave=False):
         print(batch)
         break
