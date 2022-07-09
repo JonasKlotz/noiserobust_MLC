@@ -26,14 +26,15 @@ class Glove:
     This class loads and processes the weights for a Glove word2vec embedding
     """
 
-    def __init__(self, data_path="data/glove", load_from_txt=True, download=False, padding_vector=None,
-                 unknown_vector=None):
+    def __init__(self, data_path="data/glove", load_from_txt=False, download=False, padding_vector=None,
+                 unknown_vector=None, dim=50):
         """
         Initialize Glove weights from a given path.
         :param download: Initializing with download can take quite some time, as 800 MB have to be downloaded.
         :param data_path: path to a directory where the weights will be saved. I
 
         """
+        self.dim = dim
         self.data_path = data_path
         if download:
             self.words, self.vectors = self.download_glove()
@@ -47,6 +48,7 @@ class Glove:
 
         self._set_padding_and_unknown(padding_vector=padding_vector, unknown_vector=unknown_vector)
         self._setup_dict()
+        self.save_glove()
         self._clean_directory()
 
     def __getitem__(self, item: list | str) -> list | np.ndarray:
@@ -84,7 +86,7 @@ class Glove:
 
     def _load_from_text(self):
         vocab, embeddings = [], []
-        with open(f"{self.data_path}/glove.42B.300d.txt", 'rt') as fi:
+        with open(f"{self.data_path}/glove.6B.{str(self.dim)}d.txt", 'rt') as fi:
             full_content = fi.read().strip().split('\n')
         for i in range(len(full_content)):
             i_word = full_content[i].split(' ')[0]
@@ -121,10 +123,10 @@ class Glove:
         saves glowe as npy files in the data dir
         :return:
         """
-        with open(f'{self.data_path}/words.npy', 'wb') as f:
+        with open(f'{self.data_path}/words_{str(self.dim)}.npy', 'wb') as f:
             np.save(f, self.words)
 
-        with open(f'{self.data_path}/vectors.npy', 'wb') as f:
+        with open(f'{self.data_path}/vectors_{str(self.dim)}.npy', 'wb') as f:
             np.save(f, self.vectors)
 
     def load_glove(self):
@@ -133,8 +135,8 @@ class Glove:
         :return:
         """
         try:
-            words = np.load(f'{self.data_path}/words.npy')
-            vectors = np.load(f'{self.data_path}/vectors.npy')
+            words = np.load(f'{self.data_path}/words_{str(self.dim)}.npy')
+            vectors = np.load(f'{self.data_path}/vectors_{str(self.dim)}.npy')
         except OSError as e:
             print(e)
             raise FileNotFoundError(f"No files at {self.data_path}")
@@ -189,11 +191,15 @@ class Glove:
             plt.annotate(label, xy=(x, y), xytext=(0, 0), textcoords="offset points")
         plt.show()
 
+    def save_word_embeddings(self, words, name="deepglobe"):
+        res  = self[words]
+        with open(f'{self.data_path}/{name}_labels_d{str(self.dim)}.npy', 'wb') as f:
+            np.save(f, res)
+
 
 import networkx as nx
-from netgraph import Graph, InteractiveGraph, EditableGraph
 
-def plot_edge_matrix(edge_matrix):
+def plot_edge_matrix(edge_matrix, label_mapping):
     G = nx.from_numpy_matrix(edge_matrix)
     G = nx.relabel_nodes(G, label_mapping)
 
@@ -225,25 +231,32 @@ def plot_edge_matrix(edge_matrix):
     plt.show()
     fig.savefig('waka.svg')
 
+def load_word_embeddings( dim, labels,data_path= "data/glove", name="deepglobe"):
+    try:
+        return np.load(f'{data_path}/{name}_labels_d{str(dim)}.npy')
+    except:
+        G_dict = Glove(dim=dim)
+        return G_dict[labels]
 
 if __name__ == '__main__':
-    G_dict = Glove(load_from_txt=False)  # Download = True can can take long
+    G_dict = Glove(dim=300)  # Download = True can can take long
     # print(G_dict["nichtdrinne"])
 
     labels = ["urban", "agriculture", "rangeland", "forest", "water", "barren", "unknown"]
-    label_mapping = {idx: l for idx, l in enumerate(labels)}
+    G_dict.save_word_embeddings(words=labels, )
+    #label_mapping = {idx: l for idx, l in enumerate(labels)}
     n = len(labels)
     res = (G_dict[labels])
-    edge_matrix = np.zeros((n, n))
-
-    for i in range(n):
-        for k in range(n):
-            edge_matrix[i, k] = np.linalg.norm(res[i] - res[k])
-
-    edge_matrix = np.round(edge_matrix, 2)
-    plot_edge_matrix(edge_matrix)
-    """
-        G = nx.from_numpy_matrix(edge_matrix)
-        # Create a non-interactive plot:
-        Graph(G)
-        plt.show()"""
+    # edge_matrix = np.zeros((n, n))
+    #
+    # for i in range(n):
+    #     for k in range(n):
+    #         edge_matrix[i, k] = np.linalg.norm(res[i] - res[k])
+    #
+    # edge_matrix = np.round(edge_matrix, 2)
+    # plot_edge_matrix(edge_matrix, label_mapping)
+    # """
+    #     G = nx.from_numpy_matrix(edge_matrix)
+    #     # Create a non-interactive plot:
+    #     Graph(G)
+    #     plt.show()"""
