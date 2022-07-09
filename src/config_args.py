@@ -115,7 +115,7 @@ def config_args(opt):
     # Saving dir of the model
     opt.model_name = ''
     opt.model_name += opt.model + '/'
-    opt.model_name += now.strftime("%d.%m_%H:%M_")
+    opt.model_name += now.strftime("%d.%m_%H.%M_")
     opt.model_name += '.glove_d_' + str(opt.d_model)
     opt.model_name += '.epochs_' + str(opt.epoch)
     opt.model_name += '.loss_' + str(opt.loss)
