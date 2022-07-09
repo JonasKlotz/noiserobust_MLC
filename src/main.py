@@ -57,7 +57,7 @@ def main(opt):
             # load node embeddings from glove
             print("Using CbMLC")
             try:
-                weights_matrix = torch.from_numpy(load_word_embeddings(data_path= "data/glove", dim=50, labels=labels))\
+                weights_matrix = torch.from_numpy(load_word_embeddings(data_path= "data/glove", dim=opt.d_model, labels=labels))\
                     .to(torch.float32)
             except FileNotFoundError as e:
                 print(f"ERROR: Glovefile not found {e}\n"

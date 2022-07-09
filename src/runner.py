@@ -17,6 +17,15 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
     losses = []
 
     loss_file = open(path.join(opt.model_name, 'losses.csv'), 'w+')
+    loss_file.write('epoch,train_loss,valid_loss,test_loss')
+    loss_file.write('\n')
+    loss_file.close()
+
+    results_file = open(path.join(opt.model_name, 'results.csv'), 'w+')
+    results_file.write('epoch,train_miAP,train_maAP,train_miF1,train_maF1,train_loss,valid_miAP,valid_maAP,valid_miF1,valid_maF1,valid_loss,test_miAP,test_maAP,test_miF1,test_maF1,test_loss')
+    results_file.write('\n')
+    results_file.close()
+
     for epoch_i in range(opt.epoch):
         print('================= Epoch', epoch_i + 1, '=================')
         if scheduler and opt.lr_decay > 0: scheduler.step()
@@ -35,8 +44,16 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         maF1 = f1_score(all_targets, threshed_predictions, average='macro')
         print(f"macro ap {maAP}, micro ap {miAP}")
         print(f"macro F1 {maF1}, micro F1 {miF1}")
-
+        
         train_metrics = evals.compute_metrics(all_predictions, all_targets, 0, opt, elapsed, all_metrics=True)
+        with open(path.join(opt.model_name, 'results.csv'), 'a') as results_file:
+            results_file.write(str(int(epoch_i + 1)))
+            results_file.write(',' + str(miAP))
+            results_file.write(',' + str(maAP))
+            results_file.write(',' + str(miF1))
+            results_file.write(',' + str(maF1))
+            results_file.write(',' + str(train_loss))
+
 
         ################################### VALID ###################################
         start = time.time()
@@ -57,6 +74,14 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         torch.save(all_targets, path.join(opt.model_name, 'epochs', 'valid_targets' + str(epoch_i + 1) + '.pt'))
         valid_metrics = evals.compute_metrics(all_predictions, all_targets, 0, opt, elapsed, all_metrics=True)
         valid_losses += [valid_loss]
+
+        with open(path.join(opt.model_name, 'results.csv'), 'a') as results_file:
+            results_file.write(str(int(epoch_i + 1)))
+            results_file.write(',' + str(miAP))
+            results_file.write(',' + str(maAP))
+            results_file.write(',' + str(miF1))
+            results_file.write(',' + str(maF1))
+            results_file.write(',' + str(valid_loss))
 
         ################################## TEST ###################################
         start = time.time()
@@ -81,12 +106,22 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         
         print(opt.model_name)
 
+        with open(path.join(opt.model_name, 'results.csv'), 'a') as results_file:
+            results_file.write(str(int(epoch_i + 1)))
+            results_file.write(',' + str(miAP))
+            results_file.write(',' + str(maAP))
+            results_file.write(',' + str(miF1))
+            results_file.write(',' + str(maF1))
+            results_file.write(',' + str(test_loss))
+            results_file.write('\n')
+
         losses.append([epoch_i + 1, train_loss, valid_loss])
 
         utils.save_model(opt, epoch_i, model, valid_loss, valid_losses)
+        with open(path.join(opt.model_name, 'losses.csv'), 'a') as loss_file:
+            loss_file.write(str(int(epoch_i + 1)))
+            loss_file.write(',' + str(train_loss))
+            loss_file.write(',' + str(valid_loss))
+            loss_file.write(',' + str(test_loss))
+            loss_file.write('\n')
 
-        loss_file.write(str(int(epoch_i + 1)))
-        loss_file.write(',' + str(train_loss))
-        loss_file.write(',' + str(valid_loss))
-        loss_file.write(',' + str(test_loss))
-        loss_file.write('\n')
