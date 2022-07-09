@@ -136,8 +136,8 @@ def load_data_from_lmdb(data_dir="/data/deepglobe_patches/", transformations=Non
             transforms.ToPILImage(),  # to PIL such that it can be converted to tensor
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
-            # transforms.RandomVerticalFlip(p=0.3),
-            # transforms.RandomHorizontalFlip(p=0.3),
+            transforms.RandomVerticalFlip(p=0.3),
+            transforms.RandomHorizontalFlip(p=0.3),
             # transforms.RandomRotation(degrees=(-90, 90)),
             # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
             transforms.Normalize(*imagenet_stats)
