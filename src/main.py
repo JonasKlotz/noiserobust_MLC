@@ -29,8 +29,8 @@ from wordembedding.glove import load_word_embeddings
 
 def main(opt):
     # Printing Debug Information
-    os.environ["CUDA_VISIBLE_DEVICES"] = ""
-    torch.cuda.is_available = lambda: False
+    #os.environ["CUDA_VISIBLE_DEVICES"] = ""
+    #torch.cuda.is_available = lambda: False
     print("Cuda is available:", torch.cuda.is_available())
 
     # ========= Loading Dataset =========#
