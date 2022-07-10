@@ -49,7 +49,10 @@ class GraphDecoder(nn.Module):
         if int_preds: int_outs = []
         if return_attns: dec_slf_attns, dec_enc_attns = [], []
 
-        tgt_seq = self.constant_input.repeat(1, batch_size).transpose(0, 1)  # .cuda()
+        if torch.cuda.is_available():
+            tgt_seq = self.constant_input.repeat(1, batch_size).transpose(0, 1)
+        else:
+            tgt_seq = self.constant_input.repeat(1, batch_size).transpose(0, 1)  # .cuda()
         # print(f"\n tgt_seq {tgt_seq.shape} why this is not 32???")
         dec_output = self.tgt_word_emb(tgt_seq)
         # print(f" dec input {dec_output.shape} why this is not 32???")
@@ -59,7 +62,10 @@ class GraphDecoder(nn.Module):
             dec_enc_attn_pad_mask = utils.get_attn_padding_mask(tgt_seq, src_seq[:, 0:enc_output.size(1)])
 
         if self.label_mask is not None:
-            dec_slf_attn_mask = self.label_mask.repeat(batch_size, 1, 1).byte()  # .cuda().byte()
+            if torch.cuda.is_available():
+                dec_slf_attn_mask = self.label_mask.repeat(batch_size, 1, 1).byte().cuda().byte()
+            else:    
+                dec_slf_attn_mask = self.label_mask.repeat(batch_size, 1, 1).byte()  # .cuda().byte()
         else:
             dec_slf_attn_mask = None
 
