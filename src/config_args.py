@@ -14,6 +14,9 @@ def get_args(parser):
     parser.add_argument('-loss', type=str, choices=['asl', 'bce', 'weighted_bce'], default='bce')
     parser.add_argument('-predict', action='store_true', default=False)
     parser.add_argument('-optim', type=str, choices=['adam', 'sgd'], default='adam')
+    parser.add_argument('-dataset_path', default='data/deepglobe_patches/')
+    parser.add_argument('-embedded_weights_path', default='data/glove')
+
 
     ################ CONSTANT PARAMETERS ##################################
     parser.add_argument('-dataroot', type=str, default='data/')
@@ -127,4 +130,5 @@ def config_args(opt):
     # dataset
     opt.data_type = opt.dataset
     opt.dataset = path.join(opt.dataroot, opt.dataset)
+    print(opt.dataset)
     return opt

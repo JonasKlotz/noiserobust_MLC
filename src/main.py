@@ -41,7 +41,7 @@ def main(opt):
             data_dir='data/apparel-images-dataset', batch_size=opt.batch_ize)
     else:
         train_data, valid_data, test_data, labels = load_data_from_lmdb(
-            data_dir="data/deepglobe_patches/", batch_size=opt.batch_size)
+            data_dir=opt.dataset_path, batch_size=opt.batch_size)
     n_output_classes = len(labels)
 
     opt.tgt_vocab_size = n_output_classes  # number of labels
@@ -60,7 +60,7 @@ def main(opt):
             # load node embeddings from glove
             try:
                 weights_matrix = torch.from_numpy(
-                    load_word_embeddings(data_path="data/glove", dim=opt.d_model, labels=labels)) \
+                    load_word_embeddings(data_path=opt.embedded_weights_path, dim=opt.d_model, labels=labels)) \
                     .to(torch.float32)
             except FileNotFoundError as e:
                 print(f"ERROR: Glovefile not found {e}\n"
