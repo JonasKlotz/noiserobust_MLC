@@ -50,7 +50,7 @@ class GraphDecoder(nn.Module):
         if return_attns: dec_slf_attns, dec_enc_attns = [], []
 
         if torch.cuda.is_available():
-            tgt_seq = self.constant_input.repeat(1, batch_size).transpose(0, 1)
+            tgt_seq = self.constant_input.repeat(1, batch_size).transpose(0, 1).cuda()
         else:
             tgt_seq = self.constant_input.repeat(1, batch_size).transpose(0, 1)  # .cuda()
         # print(f"\n tgt_seq {tgt_seq.shape} why this is not 32???")
