@@ -2,13 +2,13 @@
 
 #SBATCH -J ASL_TRAINING	# Job Name
 
-#SBATCH --nodes=1               # Anzahl Knoten N
+#SBATCH --nodes=2               # Anzahl Knoten N
 #SBATCH --ntasks-per-node=5     # Prozesse n pro Knoten
 #SBATCH --ntasks-per-core=5	  # Prozesse n pro CPU-Core
 #SBATCH --mem=10G              # 500MiB resident memory pro node
 
 ##Max Walltime vorgeben:
-#SBATCH --time=24:00:00 # Erwartete Laufzeit
+#SBATCH --time=60:00:00 # Erwartete Laufzeit
 
 ## AUf GPU Rechnen
 #SBATCH --partition=gpu
