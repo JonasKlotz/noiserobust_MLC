@@ -31,11 +31,9 @@ loss=("weighted_bce" "bce", "asl")
 optim=("adam"  "sgd")
 d_model=(50 300)
 learning_rates=(0.001  0.005)
-batchsize=(32 64 128)
 
-set len=3*3*2*2*2*3
+set len=3*3*2*2*2
 set counter=0
-set counter+=1
 
 
 for m in ${model[@]}; do
@@ -43,11 +41,10 @@ for m in ${model[@]}; do
 		for o in ${optim[@]}; do
 			for d in ${d_model[@]}; do
 				for lr in ${learning_rates[@]}; do
-					for bs in ${batchsize[@]}; do
 						args="-model ${m} -loss ${l} -optim ${o} -d_model ${d} -lr ${lr}"
 						python3 src/main.py $args
+						set counter+=1
 						echo "$counter of $len done" > out.txt
-					done
 				done
 			done
 		done
