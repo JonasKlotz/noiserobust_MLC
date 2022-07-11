@@ -19,7 +19,6 @@
 #SBATCH -o logfile_conda                  # send stdout to outfile
 #SBATCH -e errfile_conda                  # send stderr to errfile
 
-conda init bash
 conda activate rs_3.8
 
 
