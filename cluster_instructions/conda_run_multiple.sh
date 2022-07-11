@@ -16,8 +16,8 @@
 
 
 
-#SBATCH -o logfile_conda                  # send stdout to outfile
-#SBATCH -e errfile_conda                  # send stderr to errfile
+#SBATCH -o logs/logfile_conda_all                  # send stdout to outfile
+#SBATCH -e logs/errfile_conda_all                  # send stderr to errfile
 
 
 conda activate rs_3.8
@@ -27,7 +27,7 @@ echo Start
 
 # Parameters for running
 model=("resnet_base" "clbc" "lamp")
-loss=("bce_weighted" "bce", "asl")
+loss=("weighted_bce" "bce", "asl")
 optim=("adam"  "sgd")
 d_model=(50 300)
 learning_rates=(0.001  0.005  0.001)
@@ -40,8 +40,8 @@ for m in ${model[@]}; do
 			for d in ${d_model[@]}; do
 				for lr in ${learning_rates[@]}; do
 					for bs in ${batchsize[@]}; do
-						args="-model \"${m}\" -loss \"${l}\" -optim \"${o}\" -d_model \"${d}\" -lr \"${lr}\""
-						python3 src/main.py  "$args"
+						args="-model ${m} -loss ${l} -optim ${o} -d_model ${d} -lr ${lr}"
+						python3 src/main.py $args
 					done
 				done
 			done
