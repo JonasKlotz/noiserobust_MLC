@@ -8,7 +8,7 @@
 #SBATCH --mem=10G              # 500MiB resident memory pro node
 
 ##Max Walltime vorgeben:
-#SBATCH --time=24:00:00 # Erwartete Laufzeit
+#SBATCH --time=00:30:00 # Erwartete Laufzeit
 
 ## AUf GPU Rechnen
 #SBATCH --partition=gpu
@@ -19,7 +19,8 @@
 #SBATCH -o logfile_conda                  # send stdout to outfile
 #SBATCH -e errfile_conda                  # send stderr to errfile
 
-
+~/miniconda3/bin/conda init bash
+~/miniconda3/bin/conda init zsh
 conda activate rs_3.8
 
 
