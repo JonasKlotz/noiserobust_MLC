@@ -19,6 +19,7 @@
 #SBATCH -o logs/logfile_conda                  # send stdout to outfile
 #SBATCH -e logs/errfile_conda                  # send stderr to errfile
 
+source ~/miniconda3/etc/profile.d/conda.sh
 conda activate rs_3.8
 
 
