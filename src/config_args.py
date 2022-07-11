@@ -26,7 +26,7 @@ def get_args(parser):
     parser.add_argument('-n_head', type=int, default=8)
     parser.add_argument('-n_head2', type=int, default=0)
     parser.add_argument('-n_layers_enc', type=int, default=5)
-    parser.add_argument('-n_layers_dec', type=int, default=None)
+    parser.add_argument('-n_layers_dec', type=int, default=4)
     parser.add_argument('-lr_step_size', type=int, default=1)
     parser.add_argument('-lr_decay', type=float, default=0)
     parser.add_argument('-max_encoder_len', type=int, default=300)
@@ -124,8 +124,8 @@ def config_args(opt):
     opt.model_name += '.' + str(opt.loss)
     opt.model_name += '.' + str(opt.optim)
     opt.model_name += '.lr_' + str(opt.lr).split('.')[1]
-    opt.model_name += '.bs_' + str(opt.batchsize)
-    opt.model_name += '.dec_layers_' + str(opt.batch_size)
+    opt.model_name += '.bs_' + str(opt.batch_size)
+    opt.model_name += '.dec_layers_' + str(opt.n_layers_dec)
     opt.model_name += '.n_head_' + str(opt.n_head)
 
     opt.model_name = path.join(opt.results_dir, opt.dataset, opt.model_name)
