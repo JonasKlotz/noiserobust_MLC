@@ -4,4 +4,7 @@ __pycache__
 /archive/
 /src/logs/
 /src/results/
-/data/
+
+/data/deepglobe
+/data/deepglobe_patches
+/data/deepglobe_small

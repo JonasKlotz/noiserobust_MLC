@@ -10,15 +10,17 @@
 ##Max Walltime vorgeben:
 #SBATCH --time=80:00:00 # Erwartete Laufzeit
 
-#Auf Standard-Knoten rechnen:
+## AUf GPU Rechnen
+#SBATCH --partition=gpu
 #SBATCH --gres=gpu:tesla:1                      # Use 1 GPU per node
 
 
-#SBATCH -o logfile                  # send stdout to outfile
-#SBATCH -e errfile                  # send stderr to errfile
+
+#SBATCH -o logfile_conda                  # send stdout to outfile
+#SBATCH -e errfile_conda                  # send stderr to errfile
 
 
-
+conda activate rs_3.8
 
 ##cd
 ##source /home/users/j/jonasklotz/rs_env/bin/activate
@@ -27,7 +29,6 @@
 echo Start
 
 python3 /home/users/j/jonasklotz/remotesensing/src/main.py -model resnet_base -dataset deepglobe -d_model 50 -epoch 50 -lr 0.0001 -loss asl -optim adam
-python3 /home/users/j/jonasklotz/remotesensing/src/main.py -model lamp -dataset deepglobe -d_model 50 -epoch 50 -lr 0.0001 -loss asl -optim adam
 python3 /home/users/j/jonasklotz/remotesensing/src/main.py -model CbMLC -dataset deepglobe -d_model 50 -epoch 50 -lr 0.0001 -loss asl -optim adam
 
 
