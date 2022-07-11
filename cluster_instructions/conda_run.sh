@@ -20,7 +20,6 @@
 #SBATCH -e errfile_conda                  # send stderr to errfile
 
 conda init bash
-exec bash
 conda activate rs_3.8
 
 
