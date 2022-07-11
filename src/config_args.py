@@ -119,11 +119,15 @@ def config_args(opt):
     opt.model_name = ''
     opt.model_name += opt.model + '/'
     opt.model_name += now.strftime("%d.%m_%H.%M_")
-    opt.model_name += '.glove_d_' + str(opt.d_model)
+    opt.model_name += '.d_' + str(opt.d_model)
     opt.model_name += '.epochs_' + str(opt.epoch)
-    opt.model_name += '.loss_' + str(opt.loss)
+    opt.model_name += '.' + str(opt.loss)
     opt.model_name += '.' + str(opt.optim)
     opt.model_name += '.lr_' + str(opt.lr).split('.')[1]
+    opt.model_name += '.bs_' + str(opt.batchsize)
+    opt.model_name += '.dec_layers_' + str(opt.batchsize)
+    opt.model_name += '.n_head_' + str(opt.n_head)
+
     opt.model_name = path.join(opt.results_dir, opt.dataset, opt.model_name)
     print(f"Saving results to {opt.model_name}")
 
