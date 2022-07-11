@@ -25,6 +25,28 @@ conda activate rs_3.8
 
 echo Start
 
-python3 /home/users/j/jonasklotz/remotesensing/src/main.py -model CbMLC -dataset deepglobe -d_model 50 -epoch 50 -lr 0.0001 -loss asl -optim adam
+# Parameters for running
+model=("resnet_base" "clbc" "lamp")
+loss=("bce_weighted" "bce", "asl")
+optim=("adam"  "sgd")
+d_model=(50 300)
+learning_rates=(0.001  0.005  0.001)
+batchsize=(32 64 128)
+
+
+for m in ${model[@]}; do
+	for l in ${loss[@]}; do
+		for o in ${optim[@]}; do
+			for d in ${d_model[@]}; do
+				for lr in ${learning_rates[@]}; do
+					for bs in ${batchsize[@]}; do
+						args="-model \"${m}\" -loss \"${l}\" -optim \"${o}\" -d_model \"${d}\" -lr \"${lr}\""
+						python3 src/main.py  "$args"
+					done
+				done
+			done
+		done
+	done
+done
 
 
