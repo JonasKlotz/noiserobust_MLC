@@ -18,7 +18,7 @@
 #SBATCH -e errfile                  # send stderr to errfile
 
 
-
+conda activate rs_3.8
 
 ##cd
 ##source /home/users/j/jonasklotz/rs_env/bin/activate
