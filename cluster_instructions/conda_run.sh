@@ -19,8 +19,8 @@
 #SBATCH -o logfile_conda                  # send stdout to outfile
 #SBATCH -e errfile_conda                  # send stderr to errfile
 
-~/miniconda3/bin/conda init bash
-~/miniconda3/bin/conda init zsh
+conda init bash
+exec bash
 conda activate rs_3.8
 
 
