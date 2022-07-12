@@ -6,6 +6,7 @@ import argparse, warnings
 import torch.nn.functional as F
 
 import utils.utils as utils
+from utils.collect_env import main as print_env  # for cluster
 import torch, torch.nn as nn
 
 from data_pipeline.lmdb_dataloader import load_data_from_lmdb
@@ -16,6 +17,7 @@ from runner import run_model
 import numpy as np
 import os
 from predict import predict
+from datetime import datetime
 
 warnings.filterwarnings("ignore")
 
@@ -28,10 +30,10 @@ from wordembedding.glove import load_word_embeddings
 
 
 def main(opt):
-    # Printing Debug Information
-    #os.environ["CUDA_VISIBLE_DEVICES"] = ""
-    #torch.cuda.is_available = lambda: False
-    print("Cuda is available:", torch.cuda.is_available())
+    """ Main function that starts the training and handles everything """
+
+    # printing device info
+    print_env()
 
     # ========= Loading Dataset =========#
     opt.max_token_seq_len_d = opt.max_ar_length
@@ -110,6 +112,7 @@ def main(opt):
         crit = nn.BCEWithLogitsLoss(reduction='mean')
 
     ################## manage CUDA ################
+
     if torch.cuda.device_count() > 1 and opt.multi_gpu:
         print("Using", torch.cuda.device_count(), "GPUs!")
         model = nn.DataParallel(model)
@@ -129,8 +132,11 @@ def main(opt):
     else:
         try:
             print("============== Start Training ======================")
+            start_time = datetime.now()
             run_model(model=model, train_data=train_data, test_data=test_data, valid_data=valid_data, crit=crit,
                       optimizer=optimizer, scheduler=scheduler, opt=opt)
+            end_time = datetime.now()
+            print(f"Total time taken: {end_time - start_time}")
 
         except KeyboardInterrupt:
             print('-' * 89 + '\nManual Exit')
