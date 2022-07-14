@@ -45,7 +45,7 @@ class LMDBLoader(Dataset):
         # get all keys and the overall length of the dataset
         self.len = self.txn.stat()['entries']
         self.keys = [key.decode('ascii') for key, _ in self.txn.cursor()]
-        print(f"LMDB Initialized with Len:{self.len}")
+        print(f"LMDB Initialized - Len: {self.len} - NOISE: {self.add_noise}/{self.sub_noise}")
 
     def _get_label_indexes(self):
         """ Function that returns all present indexes for every label in the dataset and the indexes for the noise """
@@ -138,15 +138,17 @@ class LMDBLoader(Dataset):
 class DeviceDataLoader:
     """ Wraps a dataloader to move data to a device """
 
-    def __init__(self, dl, device):
+    def __init__(self, dl, device=None):
         self.dl = dl
+        if device is None:
+            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.device = device
 
     def __iter__(self):
         """Yield a batch of data after moving it to device"""
         all_batches = [b for b in self.dl]
         for batch in all_batches:
-            device_batch = to_device(batch, self.device)
+            device_batch = self.to_device(batch, self.device)
             # print(device_batch[0].get_device(), device_batch[1].get_device())
             yield device_batch
 
@@ -158,30 +160,15 @@ class DeviceDataLoader:
     def batch_size(self):
         return self.dl.batch_size
 
-
-# helper functions to load the data and model onto GPU
-def get_default_device():
-    """Pick GPU if available, else CPU"""
-    if torch.cuda.is_available():
-        return torch.device('cuda')
-    else:
-        return torch.device('cpu')
+    def to_device(self, data, device):
+        """Move tensor(s) to chosen device"""
+        if isinstance(data, (list, tuple)):
+            return [self.to_device(x, device) for x in data]
+        return data.to(device, non_blocking=True)
 
 
-def to_device(data, device):
-    """Move tensor(s) to chosen device"""
-    if isinstance(data, (list, tuple)):
-        return [to_device(x, device) for x in data]
-    return data.to(device, non_blocking=True)
-
-
-def load_data_from_lmdb(data_dir="/data/deepglobe_patches/", transformations=None, batch_size=64):
-    """
-    Pre-processing for our images
-    Resizing because images have different sizes by default
-    Converting each image from a numpy array to a tensor (so we can do calculations on the GPU)
-    Normalizing the image as following: image = (image - mean) / std
-    """
+def load_data_from_lmdb(data_dir="/data/deepglobe_patches/", transformations=None, batch_size=64, add_noise=0.2, sub_noise=0.2):
+    """ Pre-processes images, including transformations like resizing and normalization """
 
     # mean and std values of the Imagenet Dataset so that pretrained models could also be used
     imagenet_stats = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
@@ -200,7 +187,7 @@ def load_data_from_lmdb(data_dir="/data/deepglobe_patches/", transformations=Non
         ])
 
     # Getting the data
-    train_data = LMDBLoader(data_dir + "train", transformation=transformations)
+    train_data = LMDBLoader(data_dir + "train", transformation=transformations, additive_noise=add_noise, subtractive_noise=sub_noise)
     # val_data = LMDBLoader(data_dir + "valid", transform=transformations)
     # test_data = LMDBLoader(data_dir + "test", transform=transformations)
 
@@ -217,10 +204,9 @@ def load_data_from_lmdb(data_dir="/data/deepglobe_patches/", transformations=Non
     # test_loader = DataLoader(test_data, batch_size=1, shuffle=False,
     #                        num_workers=1, drop_last=True)
 
-    device = get_default_device()
     # loading training and validation data onto GPU
-    train_dl = DeviceDataLoader(train_loader, device)
-    val_dl = DeviceDataLoader(val_loader, device)
+    train_dl = DeviceDataLoader(train_loader)
+    val_dl = DeviceDataLoader(val_loader)
     test_dl = val_dl
     return train_dl, val_dl, test_dl, LABELS  # todo fix when we have labels for val and test
 

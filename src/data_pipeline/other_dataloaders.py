@@ -10,7 +10,7 @@ import torchvision.transforms as T
 import torch.nn.functional as F
 import torch.nn as nn
 from torchvision.utils import make_grid
-from data_pipeline.lmdb_dataloader import DeviceDataLoader, get_default_device, to_device
+from data_pipeline.lmdb_dataloader import DeviceDataLoader
 import os
 import re
 import requests
@@ -109,10 +109,8 @@ def load_data_from_dir(data_dir='data/apparel-images-dataset', batch_size=64):
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=True)
     val_loader = DataLoader(val_ds, batch_size=batch_size * 2, num_workers=0, drop_last=True)
 
-    device = get_default_device()
-
     # loading training and validation data onto GPU
-    train_dl = DeviceDataLoader(train_loader, device)
-    val_dl = DeviceDataLoader(val_loader, device)
+    train_dl = DeviceDataLoader(train_loader)
+    val_dl = DeviceDataLoader(val_loader)
     test_dl = val_dl
     return train_dl, val_dl, test_dl, classes
