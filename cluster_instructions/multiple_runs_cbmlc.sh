@@ -16,8 +16,8 @@
 
 
 
-#SBATCH -o logs/logfile_conda_all                  # send stdout to outfile
-#SBATCH -e logs/errfile_conda_all                  # send stderr to errfile
+#SBATCH -o logs/logfile_CbMLC                # send stdout to outfile
+#SBATCH -e logs/errfile_CbMLC                  # send stderr to errfile
 
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate rs_3.8
@@ -26,7 +26,7 @@ conda activate rs_3.8
 echo Start
 
 # Parameters for running
-model=("resnet_base" "clbc" "lamp")
+model=("CbMLC")
 loss=("weighted_bce" "bce" "asl")
 optim=("adam"  "sgd")
 d_model=(50 300)

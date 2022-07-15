@@ -16,8 +16,8 @@
 
 
 
-#SBATCH -o logs/logfile_conda_all                  # send stdout to outfile
-#SBATCH -e logs/errfile_conda_all                  # send stderr to errfile
+#SBATCH -o logs/logfile_lamp                # send stdout to outfile
+#SBATCH -e logs/errfile_lamp                  # send stderr to errfile
 
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate rs_3.8
@@ -26,14 +26,13 @@ conda activate rs_3.8
 echo Start
 
 # Parameters for running
-model=("resnet_base" "clbc" "lamp")
+model=("lamp")
 loss=("weighted_bce" "bce" "asl")
 optim=("adam"  "sgd")
 d_model=(50 300)
 learning_rates=(0.001  0.005)
 
-set len=3*3*2*2*2
-set counter=0
+
 
 
 for m in ${model[@]}; do
@@ -43,8 +42,6 @@ for m in ${model[@]}; do
 				for lr in ${learning_rates[@]}; do
 						args="-model ${m} -loss ${l} -optim ${o} -d_model ${d} -lr ${lr}"
 						python3 src/main.py $args
-						set counter+=1
-						echo "$counter of $len done" > out.txt
 				done
 			done
 		done
