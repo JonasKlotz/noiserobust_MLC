@@ -25,6 +25,6 @@ conda activate rs_3.8
 
 echo Start
 
-python3 /src/main.py -model CbMLC -dataset deepglobe -d_model 50 -epoch 50 -lr 0.0001 -loss asl -optim adam
+python3 /home/users/j/jonasklotz/remotesensing/src/main.py -model CbMLC -dataset deepglobe -d_model 50 -epoch 50 -lr 0.0001 -loss asl -optim adam
 
 
