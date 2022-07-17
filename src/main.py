@@ -45,7 +45,7 @@ def main(opt):
             data_dir='data/apparel-images-dataset', batch_size=opt.batch_ize)
     else:
         train_data, valid_data, test_data, labels = load_data_from_lmdb(
-            data_dir=opt.dataset_path, batch_size=opt.batch_size, add_noise=0., sub_noise=0.)
+            data_dir=opt.dataset_path, batch_size=opt.batch_size, add_noise=opt.add_noise, sub_noise=opt.sub_noise)
     n_output_classes = len(labels)
 
     opt.tgt_vocab_size = n_output_classes  # number of labels
