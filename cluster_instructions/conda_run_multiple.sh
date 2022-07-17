@@ -26,7 +26,7 @@ conda activate rs_3.8
 echo Start
 
 # Parameters for running
-model=("resnet_base" "clbc" "lamp")
+model=("CbMLC")
 loss=("weighted_bce" "bce" "asl")
 optim=("adam"  "sgd")
 d_model=(50 300)
