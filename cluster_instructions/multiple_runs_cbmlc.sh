@@ -8,7 +8,7 @@
 #SBATCH --mem=15G              # 500MiB resident memory pro node
 
 ##Max Walltime vorgeben:
-#SBATCH --time=300:00:00 # Erwartete Laufzeit
+#SBATCH --time=1-00:00:00 # Erwartete Laufzeit
 
 ## AUf GPU Rechnen
 #SBATCH --partition=gpu
@@ -31,9 +31,7 @@ loss=("weighted_bce" "bce" "asl")
 optim=("adam"  "sgd")
 d_model=(50 300)
 learning_rates=(0.001  0.005)
-noises = (0.1 0.3 0.5 0.7 0.9)
-set len=3*3*2*2*2
-set counter=0
+noises=(0.1 0.3 0.5 0.7)
 
 
 for m in ${model[@]}; do

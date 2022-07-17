@@ -8,7 +8,7 @@
 #SBATCH --mem=15G              # 500MiB resident memory pro node
 
 ##Max Walltime vorgeben:
-#SBATCH --time=300:00:00 # Erwartete Laufzeit
+#SBATCH --time=40:00:00 # Erwartete Laufzeit
 
 ## AUf GPU Rechnen
 #SBATCH --partition=gpu
@@ -31,7 +31,7 @@ loss=("weighted_bce" "bce" "asl")
 optim=("adam"  "sgd")
 d_model=(50 300)
 learning_rates=(0.001  0.005)
-noises = (0.1 0.3 0.5 0.7 0.9)
+noises=(0.1 0.3 0.5 0.7)
 
 
 for m in ${model[@]}; do
@@ -41,11 +41,11 @@ for m in ${model[@]}; do
 				for lr in ${learning_rates[@]}; do
 						for n in ${noises[@]}; do
               add_noise="-model ${m} -loss ${l} -optim ${o} -d_model ${d} -lr ${lr} -add_noise ${n}"
-              python3 src/main.py add_noise
+              python3 src/main.py $add_noise
               sub_noise="-model ${m} -loss ${l} -optim ${o} -d_model ${d} -lr ${lr} -sub_noise ${n}"
-              python3 src/main.py sub_noise
+              python3 src/main.py $sub_noise
               balanced="-model ${m} -loss ${l} -optim ${o} -d_model ${d} -lr ${lr} -add_noise ${n} -sub_noise ${n}"
-              python3 src/main.py balanced
+              python3 src/main.py $balanced
           done
 				done
 			done

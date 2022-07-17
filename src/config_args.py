@@ -15,8 +15,9 @@ def get_args(parser):
     parser.add_argument('-predict', action='store_true', default=False)
     parser.add_argument('-optim', type=str, choices=['adam', 'sgd'], default='adam')
     parser.add_argument('-dataset_path', default='data/deepglobe_patches/')
-    parser.add_argument('-add_noise', default=0.0)
-    parser.add_argument('-sub_noise', default=0.0)
+    parser.add_argument('-embedded_weights_path', default='data/glove')
+    parser.add_argument('-add_noise',type=float, default=0.0)
+    parser.add_argument('-sub_noise',type=float, default=0.0)
 
     ################ CONSTANT PARAMETERS ##################################
     parser.add_argument('-dataroot', type=str, default='data/')

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J RESNETBASE_TRAINING	# Job Name
+#SBATCH -J resnet_	# Job Name
 
 #SBATCH --nodes=1               # Anzahl Knoten N
 #SBATCH --ntasks-per-node=5     # Prozesse n pro Knoten
@@ -8,7 +8,7 @@
 #SBATCH --mem=15G              # 500MiB resident memory pro node
 
 ##Max Walltime vorgeben:
-#SBATCH --time=300:00:00 # Erwartete Laufzeit
+#SBATCH --time=40:00:00 # Erwartete Laufzeit
 
 ## AUf GPU Rechnen
 #SBATCH --partition=gpu
@@ -30,7 +30,7 @@ model=("resnet_base")
 loss=("weighted_bce" "bce" "asl")
 optim=("adam"  "sgd")
 learning_rates=(0.001  0.005)
-noises = (0.1 0.3 0.5 0.7)
+noises=(0.1 0.3 0.5 0.7)
 
 
 
