@@ -13,27 +13,29 @@ from data_pipeline.lmdb_dataloader import load_data_from_lmdb
 from data_pipeline.other_dataloaders import load_data_from_dir
 from lamp.Models import LAMP, ResnetBaseLine
 from config_args import config_args, get_args
-from runner import run_model
+from training import run_model
 import numpy as np
 import os
 from predict import predict
 from datetime import datetime
+from losses import AsymmetricLoss
+from wordembedding.glove import load_word_embeddings
 
 warnings.filterwarnings("ignore")
 
-from losses import AsymmetricLoss
 
 parser = argparse.ArgumentParser()
 args = get_args(parser)
 opt = config_args(args)
-from wordembedding.glove import load_word_embeddings
+
+torch.manual_seed(42)
 
 
 def main(opt):
     """ Main function that starts the training and handles everything """
 
     # printing device info
-    print_env()
+    # print_env()
 
     # ========= Loading Dataset =========#
     opt.max_token_seq_len_d = opt.max_ar_length
@@ -43,12 +45,11 @@ def main(opt):
             data_dir='data/apparel-images-dataset', batch_size=opt.batch_ize)
     else:
         train_data, valid_data, test_data, labels = load_data_from_lmdb(
-            data_dir=opt.dataset_path, batch_size=opt.batch_size)
+            data_dir=opt.dataset_path, batch_size=opt.batch_size, add_noise=0., sub_noise=0.)
     n_output_classes = len(labels)
 
     opt.tgt_vocab_size = n_output_classes  # number of labels
     label_adj_matrix = torch.ones(opt.tgt_vocab_size, opt.tgt_vocab_size)  # full graph
-    weights_matrix = torch.FloatTensor(np.random.normal(scale=0.6, size=(opt.tgt_vocab_size, opt.d_model)))
 
     # ========= Preparing Model =========#
     print(f"Using Model: {opt.model}")
@@ -85,6 +86,8 @@ def main(opt):
     if opt.load_emb:
         model = utils.load_embeddings(model, '../../Data/word_embedding_dict.pth')
 
+
+    ################## SETUP OPTIMIZER ##############################
     if opt.optim == 'adam':
         optimizer = torch.optim.Adam(model.get_trainable_parameters(), betas=(0.9, 0.999), lr=opt.lr, weight_decay=1e-5)
     elif opt.optim == 'sgd':
@@ -93,9 +96,7 @@ def main(opt):
     scheduler = torch.torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.lr_step_size, gamma=opt.lr_decay,
                                                       last_epoch=-1)
 
-    adv_optimizer = None
-
-    # crit is not used for our training, we still use BCE in the train and test loop
+    ################## SETUP LOSS ##############################
     if opt.loss == 'asl':
         print('using ASL')
         crit = AsymmetricLoss(gamma_neg=opt.asl_ng, gamma_pos=opt.asl_pg, clip=opt.asl_clip, eps=opt.asl_eps)
@@ -123,24 +124,23 @@ def main(opt):
             torch.cuda.set_device(opt.gpu_id)
 
     ######################## Load a model  ##########################
-    if opt.predict == True:
+    if opt.predict:
         predict(model, valid_data, labels, crit, weights_path="results/" +
                                                               "deepglobe/deepglobe.glove_d_300.epochs_5.loss_ce.adam.lr_0001" +
                                                               "/model.chkpt", n=5)
+        exit()
 
+    try:
+        print("============== Start Training ======================")
+        start_time = datetime.now()
+        run_model(model=model, train_data=train_data, test_data=test_data, valid_data=valid_data, crit=crit,
+                  optimizer=optimizer, scheduler=scheduler, opt=opt)
+        end_time = datetime.now()
+        print(f"Total time taken: {end_time - start_time}")
 
-    else:
-        try:
-            print("============== Start Training ======================")
-            start_time = datetime.now()
-            run_model(model=model, train_data=train_data, test_data=test_data, valid_data=valid_data, crit=crit,
-                      optimizer=optimizer, scheduler=scheduler, opt=opt)
-            end_time = datetime.now()
-            print(f"Total time taken: {end_time - start_time}")
-
-        except KeyboardInterrupt:
-            print('-' * 89 + '\nManual Exit')
-            exit()
+    except KeyboardInterrupt:
+        print('-' * 89 + '\nManual Exit')
+        exit()
 
 
 if __name__ == '__main__':

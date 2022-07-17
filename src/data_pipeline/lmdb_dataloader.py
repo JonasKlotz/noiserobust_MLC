@@ -167,7 +167,7 @@ class DeviceDataLoader:
         return data.to(device, non_blocking=True)
 
 
-def load_data_from_lmdb(data_dir="/data/deepglobe_patches/", transformations=None, batch_size=64, add_noise=0.2, sub_noise=0.2):
+def load_data_from_lmdb(data_dir="/data/deepglobe_patches/", transformations=None, batch_size=64, add_noise=0.0, sub_noise=0.0):
     """ Pre-processes images, including transformations like resizing and normalization """
 
     # mean and std values of the Imagenet Dataset so that pretrained models could also be used
@@ -181,13 +181,12 @@ def load_data_from_lmdb(data_dir="/data/deepglobe_patches/", transformations=Non
             transforms.ToTensor(),
             transforms.RandomVerticalFlip(p=0.3),
             transforms.RandomHorizontalFlip(p=0.3),
-            # transforms.RandomRotation(degrees=(-90, 90)),
-            # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
             transforms.Normalize(*imagenet_stats)
         ])
 
     # Getting the data
     train_data = LMDBLoader(data_dir + "train", transformation=transformations, additive_noise=add_noise, subtractive_noise=sub_noise)
+    # todo
     # val_data = LMDBLoader(data_dir + "valid", transform=transformations)
     # test_data = LMDBLoader(data_dir + "test", transform=transformations)
 
