@@ -1,14 +1,14 @@
 #!/bin/bash
 
-#SBATCH -J ASL_TRAINING	# Job Name
+#SBATCH -J LAMP_TRAINING	# Job Name
 
 #SBATCH --nodes=2               # Anzahl Knoten N
 #SBATCH --ntasks-per-node=5     # Prozesse n pro Knoten
 #SBATCH --ntasks-per-core=5	  # Prozesse n pro CPU-Core
-#SBATCH --mem=10G              # 500MiB resident memory pro node
+#SBATCH --mem=15G              # 500MiB resident memory pro node
 
 ##Max Walltime vorgeben:
-#SBATCH --time=60:00:00 # Erwartete Laufzeit
+#SBATCH --time=300:00:00 # Erwartete Laufzeit
 
 ## AUf GPU Rechnen
 #SBATCH --partition=gpu
@@ -31,8 +31,7 @@ loss=("weighted_bce" "bce" "asl")
 optim=("adam"  "sgd")
 d_model=(50 300)
 learning_rates=(0.001  0.005)
-
-
+noises = (0.1 0.3 0.5 0.7 0.9)
 
 
 for m in ${model[@]}; do
@@ -40,8 +39,14 @@ for m in ${model[@]}; do
 		for o in ${optim[@]}; do
 			for d in ${d_model[@]}; do
 				for lr in ${learning_rates[@]}; do
-						args="-model ${m} -loss ${l} -optim ${o} -d_model ${d} -lr ${lr}"
-						python3 src/main.py $args
+						for n in ${noises[@]}; do
+              add_noise="-model ${m} -loss ${l} -optim ${o} -d_model ${d} -lr ${lr} -add_noise ${n}"
+              python3 src/main.py add_noise
+              sub_noise="-model ${m} -loss ${l} -optim ${o} -d_model ${d} -lr ${lr} -sub_noise ${n}"
+              python3 src/main.py sub_noise
+              balanced="-model ${m} -loss ${l} -optim ${o} -d_model ${d} -lr ${lr} -add_noise ${n} -sub_noise ${n}"
+              python3 src/main.py balanced
+          done
 				done
 			done
 		done

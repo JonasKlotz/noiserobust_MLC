@@ -81,6 +81,6 @@ class CSV_logger:
     def write_csv(self, metrics, new_line=False):
         with open(self.file_path, 'a') as csv_file:
             for m in metrics:
-                csv_file.write(',' + str(m))
+                csv_file.write(str(m) + ',')
             if new_line:
                 csv_file.write('\n')
