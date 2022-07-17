@@ -2,7 +2,7 @@
 
 #SBATCH -J lamp_asl	# Job Name
 
-#SBATCH --nodes=2               # Anzahl Knoten N
+#SBATCH --nodes=1               # Anzahl Knoten N
 #SBATCH --ntasks-per-node=5     # Prozesse n pro Knoten
 #SBATCH --ntasks-per-core=5	  # Prozesse n pro CPU-Core
 #SBATCH --mem=15G              # 500MiB resident memory pro node
