@@ -15,8 +15,8 @@ def get_args(parser):
     parser.add_argument('-predict', action='store_true', default=False)
     parser.add_argument('-optim', type=str, choices=['adam', 'sgd'], default='adam')
     parser.add_argument('-dataset_path', default='data/deepglobe_patches/')
-    parser.add_argument('-embedded_weights_path', default='data/glove')
-
+    parser.add_argument('-add_noise', default=0.0)
+    parser.add_argument('-sub_noise', default=0.0)
 
     ################ CONSTANT PARAMETERS ##################################
     parser.add_argument('-dataroot', type=str, default='data/')
@@ -120,13 +120,12 @@ def config_args(opt):
     opt.model_name += opt.model + '/'
     opt.model_name += now.strftime("%d.%m_%H.%M_")
     opt.model_name += '.d_' + str(opt.d_model)
-    opt.model_name += '.epochs_' + str(opt.epoch)
     opt.model_name += '.' + str(opt.loss)
     opt.model_name += '.' + str(opt.optim)
     opt.model_name += '.lr_' + str(opt.lr).split('.')[1]
-    opt.model_name += '.bs_' + str(opt.batch_size)
-    opt.model_name += '.dec_layers_' + str(opt.n_layers_dec)
-    opt.model_name += '.n_head_' + str(opt.n_head)
+    opt.model_name += '.addnoise_' + str(opt.add_noise)
+    opt.model_name += '.subnoise_' + str(opt.sub_noise)
+
 
     opt.model_name = path.join(opt.results_dir, opt.dataset, opt.model_name)
     print(f"Saving results to {opt.model_name}")
@@ -134,5 +133,4 @@ def config_args(opt):
     # dataset
     opt.data_type = opt.dataset
     opt.dataset = path.join(opt.dataroot, opt.dataset)
-    print(opt.dataset)
     return opt

@@ -21,12 +21,21 @@ LABELS = [
 
 class LMDBLoader(Dataset):
 
-    def __init__(self, path, transform):
+    def __init__(self, path, transformation=None, additive_noise=0., subtractive_noise=0.):
+        self.transform = transformation
+        self.add_noise = additive_noise
+        self.sub_noise = subtractive_noise
         self.path = path
         self.env = None
         self.keys = None
         self.len = None
-        self.transform = transform
+        self.label_indexes = {'urban_land': [], 'agriculture_land': [], 'rangeland': [], 'forest_land': [], 'water': [],
+                              'barren_land': [], 'unknown': []}
+        self.add_noise_indexes = {'urban_land': [], 'agriculture_land': [], 'rangeland': [], 'forest_land': [], 'water': [],
+                                  'barren_land': [], 'unknown': []}
+        self.sub_noise_indexes = {'urban_land': [], 'agriculture_land': [], 'rangeland': [], 'forest_land': [], 'water': [],
+                                  'barren_land': [], 'unknown': []}
+        np.random.seed(0)  # fix random seed
 
     def _init_db(self):
         self.env = lmdb.open(self.path, subdir=os.path.isdir(self.path),
@@ -36,7 +45,51 @@ class LMDBLoader(Dataset):
         # get all keys and the overall length of the dataset
         self.len = self.txn.stat()['entries']
         self.keys = [key.decode('ascii') for key, _ in self.txn.cursor()]
-        print(f"LMDB Initialized with Len:{self.len}")
+        print(f"LMDB Initialized - Len: {self.len} - NOISE: {self.add_noise}/{self.sub_noise}")
+
+    def _get_label_indexes(self):
+        """ Function that returns all present indexes for every label in the dataset and the indexes for the noise """
+
+        if self.env is None:
+            self._init_db()
+
+        img_index = 0
+        for key, value in self.txn.cursor():
+            value = pickle.loads(value)
+            labels = value['labels']
+            for label in labels:
+                self.label_indexes[label] += [img_index]
+            img_index += 1
+
+        # also calculate a list of indexes that are to be noised
+        for label in LABELS:
+            # get the indexes for the label
+            present_indexes = self.label_indexes[label]
+            missing_indexes = [i for i in range(self.len) if i not in present_indexes]
+
+            # get the indexes for the noise
+            add_noise_total = int(self.add_noise * len(present_indexes))
+            sub_noise_total = int(self.sub_noise * len(present_indexes))
+            self.add_noise_indexes[label] = set(np.random.choice(missing_indexes, add_noise_total, replace=False))
+            self.sub_noise_indexes[label] = set(np.random.choice(present_indexes, sub_noise_total, replace=False))
+
+    def _noisify_label(self, onehot_labels, index):
+        """ Function that adds noise to a single images labels array (one-hot), using class attributes """
+
+        if self.label_indexes is None:
+            self._get_label_indexes()
+
+        # iterate over all labels in the array
+        for i, label_value in enumerate(onehot_labels):
+            label_name = LABELS[i]
+            is_subtractive_noise = index in self.sub_noise_indexes[label_name]
+            is_additive_noise = index in self.add_noise_indexes[label_name]
+            if label_value == 1 and is_subtractive_noise:
+                onehot_labels[i] = 0
+            elif label_value == 0 and is_additive_noise:
+                onehot_labels[i] = 1
+
+        return onehot_labels
 
     def __len__(self):
         if self.len is None:
@@ -44,32 +97,27 @@ class LMDBLoader(Dataset):
         return self.len
 
     def __iter__(self):
-        # initialize if not already initialized
-        if self.len is None:
-            self._init_db()
-        # return a generator
         for i in range(self.len):
-            yield self.__getitem__(i)
+            yield self.__getitem__(i)  # return a generator
 
     def __getitem__(self, idx):
-        # Delay loading LMDB data until after initialization
+
+        # delay loading LMDB data until after initialization
         if self.env is None:
             self._init_db()
 
+        # extract the data from the LMDB
         key = self.keys[idx]
-        # print(key)
         key_unicode = key.encode()
         value_data = self.txn.get(key_unicode)
         value = pickle.loads(value_data)
-
         img = value['img']
+
+        # transform the data if wanted
         if self.transform:
             img = self.transform(img)
 
-        # transform image to tensor
-        # img = torch.from_numpy(img) -> done in transformation
-
-        # get array of onehot encoded labels
+        # get labels as onehot encoded array
         labels_onehot = np.zeros(len(LABELS), dtype=np.int64)
         try:
             labels = value['labels']
@@ -78,40 +126,30 @@ class LMDBLoader(Dataset):
         except KeyError:
             print("no labels given")
 
-        labels_onehot = torch.from_numpy(labels_onehot)
+        # add noise to the labels
+        if self.add_noise or self.sub_noise:
+            labels_onehot = self._noisify_label(labels_onehot, idx)
+
+        labels_onehot = torch.from_numpy(labels_onehot)  # convert to tensor
 
         return img, labels_onehot
 
 
-# helper functions to load the data and model onto GPU
-def get_default_device():
-    """Pick GPU if available, else CPU"""
-    if torch.cuda.is_available():
-        return torch.device('cuda')
-    else:
-        return torch.device('cpu')
+class DeviceDataLoader:
+    """ Wraps a dataloader to move data to a device """
 
-
-def to_device(data, device):
-    """Move tensor(s) to chosen device"""
-    if isinstance(data, (list, tuple)):
-        return [to_device(x, device) for x in data]
-    return data.to(device, non_blocking=True)
-
-
-class DeviceDataLoader():
-    """Wrap a dataloader to move data to a device"""
-
-    def __init__(self, dl, device):
+    def __init__(self, dl, device=None):
         self.dl = dl
+        if device is None:
+            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.device = device
 
     def __iter__(self):
         """Yield a batch of data after moving it to device"""
         all_batches = [b for b in self.dl]
         for batch in all_batches:
-            device_batch = to_device(batch, self.device)
-            #print(device_batch[0].get_device(), device_batch[1].get_device())
+            device_batch = self.to_device(batch, self.device)
+            # print(device_batch[0].get_device(), device_batch[1].get_device())
             yield device_batch
 
     def __len__(self):
@@ -122,15 +160,20 @@ class DeviceDataLoader():
     def batch_size(self):
         return self.dl.batch_size
 
+    def to_device(self, data, device):
+        """Move tensor(s) to chosen device"""
+        if isinstance(data, (list, tuple)):
+            return [self.to_device(x, device) for x in data]
+        return data.to(device, non_blocking=True)
 
-def load_data_from_lmdb(data_dir="/data/deepglobe_patches/", transformations=None, batch_size=64):
-    # Pre-processing for our images
-    # Resizing because images have different sizes by default
-    # Converting each image from a numpy array to a tensor (so we can do calculations on the GPU)
-    # Normalizing the image as following: image = (image - mean) / std
 
-    imagenet_stats = ([0.485, 0.456, 0.406], [0.229, 0.224,0.225])
+def load_data_from_lmdb(data_dir="/data/deepglobe_patches/", transformations=None, batch_size=64, add_noise=0.0, sub_noise=0.0):
+    """ Pre-processes images, including transformations like resizing and normalization """
+
     # mean and std values of the Imagenet Dataset so that pretrained models could also be used
+    imagenet_stats = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+
+    # default transformations
     if not transformations:
         transformations = transforms.Compose([
             transforms.ToPILImage(),  # to PIL such that it can be converted to tensor
@@ -138,13 +181,12 @@ def load_data_from_lmdb(data_dir="/data/deepglobe_patches/", transformations=Non
             transforms.ToTensor(),
             transforms.RandomVerticalFlip(p=0.3),
             transforms.RandomHorizontalFlip(p=0.3),
-            # transforms.RandomRotation(degrees=(-90, 90)),
-            # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
             transforms.Normalize(*imagenet_stats)
         ])
 
     # Getting the data
-    train_data = LMDBLoader(data_dir + "train", transform=transformations)
+    train_data = LMDBLoader(data_dir + "train", transformation=transformations, additive_noise=add_noise, subtractive_noise=sub_noise)
+    # todo
     # val_data = LMDBLoader(data_dir + "valid", transform=transformations)
     # test_data = LMDBLoader(data_dir + "test", transform=transformations)
 
@@ -161,20 +203,14 @@ def load_data_from_lmdb(data_dir="/data/deepglobe_patches/", transformations=Non
     # test_loader = DataLoader(test_data, batch_size=1, shuffle=False,
     #                        num_workers=1, drop_last=True)
 
-    device = get_default_device()
     # loading training and validation data onto GPU
-    train_dl = DeviceDataLoader(train_loader, device)
-    val_dl = DeviceDataLoader(val_loader, device)
+    train_dl = DeviceDataLoader(train_loader)
+    val_dl = DeviceDataLoader(val_loader)
     test_dl = val_dl
     return train_dl, val_dl, test_dl, LABELS  # todo fix when we have labels for val and test
 
 
 if __name__ == '__main__':
-    dataloader = LMDBLoader("data/deepglobe_patches/train", None)
-    for sample in dataloader:
-        print(sample)
-
-    tl, vl,test_loader, labels = load_data_from_lmdb()
-    for batch in tqdm(tl, mininterval=0.5, desc='(Training)', leave=False):
-        print(batch)
-        break
+    dataloader = LMDBLoader("data/deepglobe_patches/train", additive_noise=0.02, subtractive_noise=0.04)
+    dist = dataloader._get_label_indexes()
+    print(dist)

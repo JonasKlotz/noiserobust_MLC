@@ -27,7 +27,7 @@ echo Start
 
 # Parameters for running
 model=("CbMLC")
-loss=("weighted_bce" "bce", "asl")
+loss=("weighted_bce" "bce" "asl")
 optim=("adam"  "sgd")
 d_model=(50 300)
 learning_rates=(0.001  0.005)
