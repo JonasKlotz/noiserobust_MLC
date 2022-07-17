@@ -40,11 +40,11 @@ for m in ${model[@]}; do
 				for lr in ${learning_rates[@]}; do
 						for n in ${noises[@]}; do
               add_noise="-model ${m} -loss ${l} -optim ${o}-lr ${lr} -add_noise ${n}"
-              python3 src/main.py add_noise
+              python3 src/main.py $add_noise
               sub_noise="-model ${m} -loss ${l} -optim ${o} -lr ${lr} -sub_noise ${n}"
-              python3 src/main.py sub_noise
+              python3 src/main.py $sub_noise
               balanced="-model ${m} -loss ${l} -optim ${o} -lr ${lr} -add_noise ${n} -sub_noise ${n}"
-              python3 src/main.py balanced
+              python3 src/main.py $balanced
           done
 			done
 		done
