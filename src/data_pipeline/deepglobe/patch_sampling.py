@@ -1,3 +1,4 @@
+import random
 import time
 
 from matplotlib import pyplot as plt
@@ -18,10 +19,11 @@ LABELS = {
     '[0. 0. 0.]': 'unknown'
 }
 
+
 class Subsampler:
     """ Class that is used to create subsamples from a single image, and extract the labels associated """
 
-    def __init__(self, img, img_labels, patch_size=256, patches=12):
+    def __init__(self, img, img_labels, patch_size=256, patches=20):
         self.img = img
         self.labels_img = img_labels
         self.size = patch_size
@@ -29,7 +31,7 @@ class Subsampler:
 
         # assert self.labels_img is None or self.labels_img.shape[0] == self.img.shape[0]
 
-    def get_img_subsamples(self):
+    def get_all_subsamples_from_img(self):
         """
         Creates multiple subsamples from a given image. This is achived by a random sampling approach until finished.
 
@@ -37,6 +39,9 @@ class Subsampler:
         """
 
         subsamples_list = []
+        # img_labels = self.labels_img.reshape(-1, 3)
+        dominating_label = [1., 1., 0.]
+        # indexes = np.where(img_labels != dominating_label)
 
         # iterate until the number of correct subsamples is reached
         while len(subsamples_list) < self.patches:
@@ -44,18 +49,18 @@ class Subsampler:
             y = int((self.img.shape[1] - self.size) * np.random.random())
 
             # check if the subsample would overlap with an already existing subsample
+            is_overlap = False
             for previous in subsamples_list:
                 is_x_overlap = previous['x'] - self.size <= x <= previous['x'] + self.size
                 is_y_overlap = previous['y'] - self.size <= y <= previous['y'] + self.size
                 if is_x_overlap and is_y_overlap:
-                    continue
+                    is_overlap = True
+            if is_overlap:
+                continue
 
             # if the subsample is valid, add it to the list
-            try:
-                subsample = self._get_single_subsample(x, y)
-                subsamples_list.append(subsample)
-            except:
-                continue
+            subsample = self._get_single_subsample(x, y)
+            subsamples_list.append(subsample)
 
         return subsamples_list
 
@@ -84,7 +89,7 @@ class Subsampler:
         return subsample
 
     @staticmethod
-    def get_labels_from_label_img(label_img):
+    def get_labels_from_label_img(label_img, min_percentage=0.03):
         """
         Searches through the label image and returns the names of all labels present.
 
@@ -93,16 +98,20 @@ class Subsampler:
 
         # reshape the label image to a 1D array of pixels
         label_pixels = label_img.reshape(-1, 3)
-        unique_pixels = np.unique(label_pixels, axis=0)
 
-        # only keep unique labels from the list
-        label_pixels_str = [str(pixel) for pixel in unique_pixels]
-        labels = list(set(label_pixels_str))
+        # convert the label pixels to a list of labels
+        label_counts = np.unique(label_pixels, return_counts=True, axis=0)
+        min_limit = int(label_pixels.shape[0] * min_percentage)
+        # get the counts of each label, where a label is defined as a pixel with three integer values
+        label_counts = {LABELS[str(label_count)]: count for label_count, count in zip(label_counts[0], label_counts[1]) if count > min_limit}
 
-        # map the labels to their names
-        label_names = [LABELS[str(label)] for label in labels]
+        # remove the 'unknown' label
+        label_counts.pop('unknown', None)
 
-        return label_names
+        # convert to list of labels
+        labels = list(label_counts.keys())
+
+        return labels
 
 
 # TODO: agriculture_land_count: 6749 total: 9636
@@ -113,24 +122,11 @@ def subsample_whole_dir(dir_path):
     :param dir_path: path to the image directory
     """
 
-    # set the labels present flag if we work on the training set
-    labels_present = ('train' in dir_path)
-    print("Files:", len(os.listdir(dir_path)))
-
-    # create a path to save the lbmdb file to, also inside /data
-    save_path = dir_path.replace('deepglobe', 'deepglobe_patches')
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
-
-    # open the lmdb environment, with enough space for all subsamples
-    map_size = (983298 + 1000) * len(os.listdir(dir_path)) * 7
-    env = lmdb.open(save_path, map_size=map_size)
-
-    # create a list for label analysis
-    all_labels = []
-
     # iterate over all images in the directory that are satelite .jpg images
+    all_subsamples = []
+    all_labels = []
     images = [f for f in os.listdir(dir_path) if f.endswith('.jpg')]
+
     for subsample_index, img_filename in enumerate(images):
 
         print(subsample_index, img_filename)  # debug
@@ -139,46 +135,76 @@ def subsample_whole_dir(dir_path):
         path = dir_path + "/" + img_filename
         path_labels = path.replace('sat.jpg', 'mask.png')
 
-        # load image, and labels if exist
-        img = plt.imread(path)
-        if labels_present:
-            img_labels = plt.imread(path_labels)
-        else:
-            img_labels = None
-
         # create subsampler Class to subsample the image and get the subsamples (including labels if available)
-        subsampler = Subsampler(img=img, img_labels=img_labels)
-        subsamples = subsampler.get_img_subsamples()
+        subsampler = Subsampler(img=plt.imread(path), img_labels=plt.imread(path_labels))
+        subsamples = subsampler.get_all_subsamples_from_img()
+        all_subsamples.extend(subsamples)
 
-        if labels_present:
-            subsample_labels = [subsample['labels'] for subsample in subsamples]
-            all_labels += subsample_labels
+        all_labels += [subsample['labels'] for subsample in subsamples]
+
+    # get the percentage of 'agriculture_land' in the labels
+    agriculture_land_count = sum([1 for label in all_labels if 'agriculture_land' in label])
+    print("agriculture_land_count:", agriculture_land_count, 'total:', len(all_labels))
+
+    return all_subsamples
+
+
+def remove_only_aggreculture_subsamples(subsamples, percentage = 0.4, split_negative_ratio = 0.7):
+    """ Function that removes percentage of all subsamples that only contain aggrecultural land label """
+
+    # remove the percentage of subsamples that only contain agriculture land label
+    subsamples_positive = [subsample for subsample in subsamples if 'agriculture_land' not in subsample['labels']]
+    subsamples_negative = [subsample for subsample in subsamples if 'agriculture_land' in subsample['labels'] and len(subsample['labels']) == 1]
+    subsamples_neutral = [subsample for subsample in subsamples if 'agriculture_land' in subsample['labels'] and len(subsample['labels']) > 1]
+
+    # get the percentage of subsamples that only contain agriculture land label
+    amount_to_remove_negative = int(percentage * len(subsamples) * split_negative_ratio)
+    amount_to_remove_neutral = int((1-split_negative_ratio) * percentage * len(subsamples))
+    subsamples_negative_shortened = subsamples_negative[:-amount_to_remove_negative]
+    subsamples_neutral_shortened = subsamples_neutral[:-amount_to_remove_neutral]
+
+    # combine the subsamples
+    subsamples_shortened = subsamples_positive + subsamples_negative_shortened + subsamples_neutral_shortened
+
+    print("Aggrecultural Land count shortened:", len(subsamples_negative_shortened)+len(subsamples_neutral_shortened))
+
+    return subsamples_shortened
+
+
+def save_subsamples_to_lmdb(subsamples, dir_path, splits):
+
+    # shuffle the subsamples
+    random.shuffle(subsamples)
+
+    # split the subsamples into training and validation subsamples
+    subsamples_train = subsamples[:int(len(subsamples) * splits['train'])]
+    subsamples_val = subsamples[int(len(subsamples) * splits['train']):int(len(subsamples) * (splits['train'] + splits['val']))]
+    subsamples_test = subsamples[int(len(subsamples) * (splits['train'] + splits['val'])):]
+    subsamples_dict = {'train': subsamples_train, 'val': subsamples_val, 'test': subsamples_test}
+
+    for split_name, split in splits.items():
+        path = dir_path + "/" + split_name
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        # open the lmdb environment, with enough space for all subsamples
+        map_size = int((983298 + 1000) * len(subsamples_dict[split_name]) * split * 4)
+        env = lmdb.open(path, map_size=map_size)
 
         # iterate over subsamples and save them as key/value pair to the lmdb file, where the key is an overall index
-        for subsample_index, subsample in enumerate(subsamples):
-            key = f"{img_filename}_{subsample_index}"
+        for subsample_index, subsample in enumerate(subsamples_dict[split_name]):
+            key = f"{subsample_index}"
 
             # save the subsample as byte array to the lmdb file
             with env.begin(write=True) as txn:
                 key_bytes = key.encode('ascii')
                 value_bytes = pickle.dumps(subsample)
                 txn.put(key_bytes, value_bytes)
-
-    env.close()  # close the lmdb file
-
-    # get the percentage of 'agriculture_land' in the labels
-    agriculture_land_count = sum([1 for label in all_labels if 'agriculture_land' in label])
-    print("agriculture_land_count:", agriculture_land_count, 'total:', len(all_labels))
-
-    # save the labels to a file
-    if labels_present:
-        with open(save_path + '/labels.txt', 'w') as f:
-            for labels in all_labels:
-                labels_str = ','.join(labels)
-                f.write(str(labels_str) + '\n')
+        env.close()
 
 
-def test_lmdb(path='data/deepglobe_patches/train'):
+
+def try_lmdb(path='data/deepglobe_patches/train'):
     """
     Test the lmdb file by loading it and printing the first subsample.
     """
@@ -206,14 +232,9 @@ def test_lmdb(path='data/deepglobe_patches/train'):
             f.write(str(labels_str) + '\n')
 
 
-
-
-
-
-
 if __name__ == "__main__":
-
-    subsample_whole_dir(dir_path="data/deepglobe/valid")
-    # subsample_whole_dir(dir_path="data/deepglobe/test")
-    # test_lmdb()
-    # get_labels_from_deepglobe()
+    subsamples = subsample_whole_dir(dir_path="data/deepglobe/train")
+    subsamples_modified = remove_only_aggreculture_subsamples(subsamples)
+    save_subsamples_to_lmdb(subsamples_modified,
+                            dir_path="data/deepglobe_patches",
+                            splits={'train': 0.7, 'val': 0.1, 'test': 0.2})
