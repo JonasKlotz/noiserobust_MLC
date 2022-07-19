@@ -167,21 +167,21 @@ class DeviceDataLoader:
         return data.to(device, non_blocking=True)
 
 
-def load_data_from_lmdb(data_dir="/data/deepglobe_patches/", transformations=None, batch_size=64, add_noise=0.0, sub_noise=0.0):
+def load_data_from_lmdb(data_dir="data/deepglobe_patches/", transformations=None, batch_size=64, add_noise=0.0, sub_noise=0.0):
     """ Pre-processes images, including transformations like resizing and normalization """
 
-    # mean and std values of the Imagenet Dataset so that pretrained models could also be used
-    imagenet_stats = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    # mean and std values of the Imagenet Dataset for other datasets
+    # imagenet_stats = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    deepglobe_stats = ([0.4085, 0.3795, 0.2823], [0.1447, 0.1123, 0.1023]) # manually calculated - data_evaluation.py
 
     # default transformations
     if not transformations:
         transformations = transforms.Compose([
             transforms.ToPILImage(),  # to PIL such that it can be converted to tensor
-            transforms.Resize((224, 224)),
+            transforms.Resize(224),
             transforms.ToTensor(),
-            transforms.RandomVerticalFlip(p=0.3),
-            transforms.RandomHorizontalFlip(p=0.3),
-            transforms.Normalize(*imagenet_stats)
+            transforms.RandAugment(),
+            transforms.Normalize(*deepglobe_stats)
         ])
 
     # Getting the data

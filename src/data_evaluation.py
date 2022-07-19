@@ -1,9 +1,11 @@
 import json
 import os
 import numpy as np
+import torch
 from matplotlib import pyplot as plt
 
 from data_pipeline.deepglobe.patch_sampling import LABELS
+from data_pipeline.lmdb_dataloader import load_data_from_lmdb
 
 
 def get_labels_from_deepglobe(path='data/deepglobe/train'):
@@ -93,6 +95,17 @@ def plot_pixel_legend():
         plt.show()
 
 
+def get_mean_std(data_loader):
+    channels_sum, channels_squared_sum, num_batches = 0,0,0
+
+    for data, _ in data_loader:
+        channels_sum += torch.mean(data, dim=[0,2,3])
+        channels_squared_sum += torch.mean(data**2, dim=[0,2,3])
+        num_batches += 1
+    mean = channels_sum/num_batches
+    std = (channels_squared_sum/num_batches - mean**2)**0.5
+    return mean, std
+
 
 
 if __name__ == '__main__':
@@ -100,4 +113,6 @@ if __name__ == '__main__':
 
     # get_class_distribution(txt_path='results/data/deepglobe_labels.txt')
     # get_class_distribution(txt_path='results/data/deepglobe-patches_labels.txt')
-    plot_pixel_legend()
+    # plot_pixel_legend()
+    train_data, valid_data, test_data, labels = load_data_from_lmdb()
+    print(get_mean_std(train_data))
