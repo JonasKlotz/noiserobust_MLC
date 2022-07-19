@@ -186,28 +186,20 @@ def load_data_from_lmdb(data_dir="data/deepglobe_patches/", transformations=None
 
     # Getting the data
     train_data = LMDBLoader(data_dir + "train", transformation=transformations, additive_noise=add_noise, subtractive_noise=sub_noise)
-    # todo
-    # val_data = LMDBLoader(data_dir + "valid", transform=transformations)
-    # test_data = LMDBLoader(data_dir + "test", transform=transformations)
-
-    train_size = int(0.8 * len(train_data))
-    test_size = len(train_data) - train_size
-    train_data, val_data = torch.utils.data.random_split(train_data, [train_size, test_size])
+    val_data = LMDBLoader(data_dir + "valid", transformation=transformations)
+    test_data = LMDBLoader(data_dir + "test", transformation=transformations)
 
     # Create the dataloader for each dataset
-    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True,
-                              num_workers=0, drop_last=True)
-
-    val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=False,
-                            num_workers=0, drop_last=True)
-    # test_loader = DataLoader(test_data, batch_size=1, shuffle=False,
-    #                        num_workers=1, drop_last=True)
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=True)
+    val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=False, num_workers=0, drop_last=True)
+    test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=0, drop_last=True)
 
     # loading training and validation data onto GPU
     train_dl = DeviceDataLoader(train_loader)
     val_dl = DeviceDataLoader(val_loader)
-    test_dl = val_dl
-    return train_dl, val_dl, test_dl, LABELS  # todo fix when we have labels for val and test
+    test_dl = DeviceDataLoader(test_loader)
+
+    return train_dl, val_dl, test_dl, LABELS
 
 
 if __name__ == '__main__':
