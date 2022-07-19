@@ -186,7 +186,7 @@ def load_data_from_lmdb(data_dir="data/deepglobe_patches/", transformations=None
 
     # Getting the data
     train_data = LMDBLoader(data_dir + "train", transformation=transformations, additive_noise=add_noise, subtractive_noise=sub_noise)
-    val_data = LMDBLoader(data_dir + "valid", transformation=transformations)
+    val_data = LMDBLoader(data_dir + "val", transformation=transformations)
     test_data = LMDBLoader(data_dir + "test", transformation=transformations)
 
     # Create the dataloader for each dataset
