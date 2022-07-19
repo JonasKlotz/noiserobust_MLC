@@ -178,9 +178,9 @@ def load_data_from_lmdb(data_dir="data/deepglobe_patches/", transformations=None
     if not transformations:
         transformations = transforms.Compose([
             transforms.ToPILImage(),  # to PIL such that it can be converted to tensor
+            transforms.RandAugment(),
             transforms.Resize(224),
             transforms.ToTensor(),
-            transforms.RandAugment(),
             transforms.Normalize(*deepglobe_stats)
         ])
 

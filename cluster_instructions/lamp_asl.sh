@@ -8,7 +8,7 @@
 #SBATCH --mem=15G              # 500MiB resident memory pro node
 
 ##Max Walltime vorgeben:
-#SBATCH --time=40:00:00 # Erwartete Laufzeit
+#SBATCH --time=60:00:00 # Erwartete Laufzeit
 
 ## AUf GPU Rechnen
 #SBATCH --partition=gpu
