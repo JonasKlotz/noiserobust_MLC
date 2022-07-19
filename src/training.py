@@ -55,7 +55,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         print('\n(Testing) elapse: {elapse:3.3f} min'.format(elapse=elapsed))
         print(f"test_loss :  {str(test_loss)} macro ap {maAP}, micro ap {miAP}, macro F1 {maF1}, micro F1 {miF1}")
 
-        results_file_logger.write_csv([miF1, maF1, miAP, maAP, test_loss], new_line=False)
+        results_file_logger.write_csv([miF1, maF1, miAP, maAP, test_loss], new_line=True)
 
         utils.save_model(opt, epoch_i, model, valid_loss, valid_losses)
 
