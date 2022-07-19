@@ -118,7 +118,7 @@ class LMDBLoader(Dataset):
             img = self.transform(img)
 
         # get labels as onehot encoded array
-        labels_onehot = np.zeros(len(LABELS), dtype=np.int64)
+        labels_onehot = np.zeros(len(LABELS)-1, dtype=np.int64)
         try:
             labels = value['labels']
             for label in labels:
