@@ -1,0 +1,13 @@
+#!/bin/bash
+
+sbatch cluster_instructions/cbmlc_asl
+sbatch cluster_instructions/cbmlc_bce
+sbatch cluster_instructions/cbmlc_wbce
+
+sbatch cluster_instructions/lamp_asl
+sbatch cluster_instructions/lamp_bce
+sbatch cluster_instructions/lamp_wbce
+
+sbatch cluster_instructions/resnet_asl
+sbatch cluster_instructions/resnet_bce
+sbatch cluster_instructions/resnet_wbce

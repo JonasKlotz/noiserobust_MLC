@@ -28,7 +28,7 @@ echo Start
 # Parameters for running
 model=("CbMLC")
 loss=("weighted_bce")
-optim=("adam"  "sgd")
+optim=("sgd")
 d_model=(50 300)
 learning_rates=(0.001  0.005)
 noises=(0.1 0.3 0.5 0.7)
@@ -39,6 +39,8 @@ for m in ${model[@]}; do
 		for o in ${optim[@]}; do
 			for d in ${d_model[@]}; do
 				for lr in ${learning_rates[@]}; do
+				  no_noise="-model ${m} -loss ${l} -optim ${o} -d_model ${d} -lr ${lr}"
+            python3 src/main.py $no_noise
 				    for n in ${noises[@]}; do
               add_noise="-model ${m} -loss ${l} -optim ${o} -d_model ${d} -lr ${lr} -add_noise ${n}"
               python3 src/main.py $add_noise
