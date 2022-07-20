@@ -102,11 +102,12 @@ def main(opt):
         crit = AsymmetricLoss(gamma_neg=opt.asl_ng, gamma_pos=opt.asl_pg, clip=opt.asl_clip, eps=opt.asl_eps)
     elif opt.loss == 'weighted_bce':
         print('using weighted BCE ')
-        # if a dataset contains 100 positive and 300 negative examples of a single class,
-        # then pos_weight for the class should be equal to 300 / 100= 3
-        # The loss would act as if the dataset contains 3×100=300 positive examples.
-        pos_weight = torch.tensor([5.8611238, 1.21062702, 5.82371649, 9.89122553,
-                                   14.41991786, 9.75859599, 1.1])  # last elem is removed anyway
+        # weight each loss
+        # pos_weight_old = torch.tensor([5.8611238, 1.21062702, 5.82371649, 9.89122553,
+        #                            14.41991786, 9.75859599])  # for random deepglobe sampling
+
+        pos_weight = torch.tensor([3.1611, 0.6420, 3.3197, 4.9475, 8.9695, 5.1701])
+
         crit = nn.BCEWithLogitsLoss(reduction='mean', pos_weight=pos_weight)
     else:
         print("Using BCE")

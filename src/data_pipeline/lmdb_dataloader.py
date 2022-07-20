@@ -132,7 +132,7 @@ class LMDBLoader(Dataset):
 
         labels_onehot = torch.from_numpy(labels_onehot)  # convert to tensor
 
-        return img, labels_onehot
+        return img, labels_onehot[:-1]
 
 
 class DeviceDataLoader:
@@ -199,7 +199,7 @@ def load_data_from_lmdb(data_dir="data/deepglobe_patches/", transformations=None
     val_dl = DeviceDataLoader(val_loader)
     test_dl = DeviceDataLoader(test_loader)
 
-    return train_dl, val_dl, test_dl, LABELS
+    return train_dl, val_dl, test_dl, LABELS[:-1]
 
 
 if __name__ == '__main__':

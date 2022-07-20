@@ -96,6 +96,9 @@ def plot_pixel_legend():
 
 
 def get_mean_std(data_loader):
+    """
+    Calculate mean and std for a given dataloader
+    """
     channels_sum, channels_squared_sum, num_batches = 0,0,0
 
     for data, _ in data_loader:
@@ -106,6 +109,21 @@ def get_mean_std(data_loader):
     std = (channels_squared_sum/num_batches - mean**2)**0.5
     return mean, std
 
+def get_loss_weights(data_loader):
+    """
+    calculates the neg/pos ratio for each class ( #negative_l ist the amount of samples where label l is not present)
+    used to weight loss functions like BCE with the pos_weight parameter
+    """
+    num_samples = 0
+    for _, labels in data_loader:
+        if num_samples == 0:
+            labels_sum = torch.sum(labels, dim=0)
+        else:
+            labels_sum += torch.sum(labels, dim=0)
+        num_samples += labels.shape[0]
+    pos_weights = (num_samples-labels_sum) / labels_sum  # Divide negative samples through positive samples
+    return pos_weights
+
 
 
 if __name__ == '__main__':
@@ -114,5 +132,15 @@ if __name__ == '__main__':
     # get_class_distribution(txt_path='results/data/deepglobe_labels.txt')
     # get_class_distribution(txt_path='results/data/deepglobe-patches_labels.txt')
     # plot_pixel_legend()
-    train_data, valid_data, test_data, labels = load_data_from_lmdb()
-    print(get_mean_std(train_data))
+    from torchvision.transforms import transforms
+
+    transformations = transforms.Compose([
+        transforms.ToPILImage(),  # to PIL such that it can be converted to tensor
+        transforms.Resize(224),
+        transforms.ToTensor(),
+    ])
+    train_data, valid_data, test_data, labels = load_data_from_lmdb(transformations=transformations)
+    print(labels)
+    print("loss_weights: ", get_loss_weights(train_data))
+    print("mean and std: ", get_mean_std(train_data))
+
