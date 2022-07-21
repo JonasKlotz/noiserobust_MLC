@@ -119,13 +119,13 @@ def config_args(opt):
     # Saving dir of the model
     opt.model_name = ''
     opt.model_name += opt.model + '/'
-    opt.model_name += now.strftime("%d.%m_%H.%M_")
+    opt.model_name += now.strftime("%d_%m_%H_%M_")
     opt.model_name += '.d_' + str(opt.d_model)
-    opt.model_name += '.' + str(opt.loss)
+    opt.model_name += '.' + str(opt.loss).split('.')[1]
     opt.model_name += '.' + str(opt.optim)
     opt.model_name += '.lr_' + str(opt.lr).split('.')[1]
-    opt.model_name += '.addnoise_' + str(opt.add_noise)
-    opt.model_name += '.subnoise_' + str(opt.sub_noise)
+    opt.model_name += '.addnoise_' + str(opt.add_noise).split('.')[1]
+    opt.model_name += '.subnoise_' + str(opt.sub_noise).split('.')[1]
 
 
     opt.model_name = path.join(opt.results_dir, opt.dataset, opt.model_name)
