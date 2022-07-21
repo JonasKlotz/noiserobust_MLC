@@ -6,6 +6,7 @@ from tqdm import tqdm
 import utils.utils as utils
 import torch
 
+from utils.image_utils import save_confusion_matrix
 from utils.log import MetricTracker, calculate_metrics, CSV_logger
 
 warnings.filterwarnings("ignore")
@@ -19,8 +20,8 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
     valid_losses = []
     results_file_logger = CSV_logger(file_name="results", dir_name=opt.model_name)
 
-    for epoch_i in range(opt.epoch):
-        print('================= Epoch', epoch_i + 1, '=================')
+    for epoch_i in range(1, opt.epoch+1):
+        print('================= Epoch', epoch_i , '=================')
         if scheduler and opt.lr_decay > 0: scheduler.step()
 
         ################################## TRAIN ###################################
@@ -32,7 +33,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         print(f'\n(Train) elapse: {elapsed:3.3f} min')
         print(f"train_loss : {train_loss: .4f}, macro ap {maAP}, micro ap {miAP}, macro F1 {maF1}, micro F1 {miF1}")
 
-        results_file_logger.write_csv([epoch_i+1, miF1, maF1, miAP, maAP, train_loss], new_line=False)
+        results_file_logger.write_csv([epoch_i, miF1, maF1, miAP, maAP, train_loss], new_line=False)
 
         ################################### VALID ###################################
         start = time.time()
@@ -56,6 +57,9 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         print(f"test_loss :  {str(test_loss)} macro ap {maAP}, micro ap {miAP}, macro F1 {maF1}, micro F1 {miF1}")
 
         results_file_logger.write_csv([miF1, maF1, miAP, maAP, test_loss], new_line=True)
+
+        save_confusion_matrix(all_targets, threshed_predictions, dir_name=opt.model_name,
+                              epoch=epoch_i, every_nth_epoch=10)
 
         utils.save_model(opt, epoch_i, model, valid_loss, valid_losses)
 

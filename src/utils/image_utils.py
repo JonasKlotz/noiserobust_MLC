@@ -1,9 +1,12 @@
+import os.path
+
 import torch
 import torchvision.transforms.functional as F
 import matplotlib.pyplot as plt
 import numpy as np
-
-
+import pandas as pd
+import seaborn as sns
+from sklearn.metrics import multilabel_confusion_matrix
 imagenet_stats = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
 
@@ -98,3 +101,74 @@ def barplot_results(prediction, results, labels, loss, index=0):
     fig.savefig(f'results/boxplot_{index}.png')
     # Displaying the bar plot
     return fig
+
+
+def plot_confusion_matrix(confusion_matrix, axes, class_label, class_names, epoch=0, fontsize=14):
+    """
+    plot a confusion matrix
+
+    :param confusion_matrix:
+    :param axes:
+    :param class_label: title for plot
+    :param class_names: x and y ticks for plot
+    """
+    df_cm = pd.DataFrame(
+        confusion_matrix, index=class_names, columns=class_names, dtype=int
+    )
+
+    try:
+        heatmap = sns.heatmap(df_cm, annot=True, fmt="d", cbar=False, ax=axes)
+    except ValueError:
+        raise ValueError("Confusion matrix values must be integers.")
+    heatmap.yaxis.set_ticklabels(heatmap.yaxis.get_ticklabels(), rotation=0, ha='right', fontsize=fontsize)
+    heatmap.xaxis.set_ticklabels(heatmap.xaxis.get_ticklabels(), rotation=45, ha='right', fontsize=fontsize)
+    axes.set_ylabel('True label')
+    axes.set_xlabel('Predicted label')
+    axes.set_title("Confusion Matrix for class - " + class_label + " in epoch " + str(epoch))
+
+
+def plot_multilabel_confusion_matrices(conf_mats, class_names, dir_name="", epoch=0, show=False):
+    """
+
+    :param conf_mats: NP array containing multilabel confusion matrices
+    :param class_names: labels
+    :param title: model name
+    :param epoch:
+    """
+    fig, ax = plt.subplots(4, 5, figsize=(20, 20))
+    ax = ax.flatten()
+    for i in range(len(class_names)):
+        plot_confusion_matrix(conf_mats[i], ax[i], class_names[i], ["N", "Y"], epoch)
+
+    for i in range(len(class_names), 4 * 5):
+        ax[i].axis('off')
+    fig.tight_layout()
+    fig.savefig(dir_name + f"/CM_epoch_{epoch}.png")
+    if show:
+        plt.show()
+
+
+def save_confusion_matrix(y_true, y_pred, class_names, epoch=1, dir_name="", every_nth_epoch=0):
+    """
+
+    Calculate and save confusion Matrix
+
+
+    :param y_true:
+    :param y_pred:
+    :param class_names:
+    :param epoch:
+    :param model_name:
+    """
+    # save confusion matrix every nth epoch only, otherwise files get too big
+    if every_nth_epoch and not epoch % every_nth_epoch == 0:
+        return
+
+    try:
+        dir_name = os.path.join(dir_name, "conf_mat")
+        os.makedirs(dir_name)
+    except OSError as exc:
+        pass
+
+    conf_mats = multilabel_confusion_matrix(y_true, y_pred)
+    plot_multilabel_confusion_matrices(conf_mats, class_names, dir_name=dir_name, epoch=epoch, show=False)
