@@ -59,7 +59,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         results_file_logger.write_csv([miF1, maF1, miAP, maAP, test_loss], new_line=True)
 
         save_confusion_matrix(all_targets, threshed_predictions, dir_name=opt.model_name,
-                              epoch=epoch_i, every_nth_epoch=10, class_names=class_names)
+                              epoch=epoch_i, every_nth_epoch=25, class_names=class_names)
 
         utils.save_model(opt, epoch_i, model, valid_loss, valid_losses)
 
