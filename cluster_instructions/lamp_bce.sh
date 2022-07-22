@@ -30,7 +30,7 @@ model=("lamp")
 loss=("bce")
 optim=("sgd")
 d_model=(300)
-learning_rates=(0.001  0.005)
+learning_rates=(0.001)
 noises=(0.1 0.3 0.5 0.7)
 
 
