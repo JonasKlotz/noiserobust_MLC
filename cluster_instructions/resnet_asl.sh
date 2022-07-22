@@ -41,8 +41,9 @@ for m in ${model[@]}; do
 				  no_noise="-model ${m} -loss ${l} -optim ${o} -d_model ${d} -lr ${lr}"
             python3 src/main.py $no_noise
 						for n in ${noises[@]}; do
-              add_noise="-model ${m} -loss ${l} -optim ${o}-lr ${lr} -add_noise ${n}"
+              add_noise="-model ${m} -loss ${l} -optim ${o} -lr ${lr} -add_noise ${n}"
               python3 src/main.py $add_noise
+
               sub_noise="-model ${m} -loss ${l} -optim ${o} -lr ${lr} -sub_noise ${n}"
               python3 src/main.py $sub_noise
               balanced="-model ${m} -loss ${l} -optim ${o} -lr ${lr} -add_noise ${n} -sub_noise ${n}"

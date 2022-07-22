@@ -135,7 +135,7 @@ def main(opt):
         print("============== Start Training ======================")
         start_time = datetime.now()
         run_model(model=model, train_data=train_data, test_data=test_data, valid_data=valid_data, crit=crit,
-                  optimizer=optimizer, scheduler=scheduler, opt=opt)
+                  optimizer=optimizer, scheduler=scheduler, opt=opt, class_names=labels)
         end_time = datetime.now()
         print(f"Total time taken: {end_time - start_time}")
 
