@@ -106,7 +106,7 @@ def main(opt):
         # pos_weight_old = torch.tensor([5.8611238, 1.21062702, 5.82371649, 9.89122553,
         #                            14.41991786, 9.75859599])  # for random deepglobe sampling
 
-        pos_weight = torch.tensor([3.0458, 1.1199, 3.2000, 3.9087, 8.7533, 4.3418])
+        pos_weight = torch.tensor([1.9643, 1.1112, 2.0769, 3.4269, 6.2885, 3.6217])
 
         crit = nn.BCEWithLogitsLoss(reduction='mean', pos_weight=pos_weight)
     else:

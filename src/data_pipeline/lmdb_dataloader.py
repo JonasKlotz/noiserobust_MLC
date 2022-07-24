@@ -171,7 +171,7 @@ def load_data_from_lmdb(data_dir="data/deepglobe_patches/", transformations=None
 
     # mean and std values of the Imagenet Dataset for other datasets
     # imagenet_stats = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    deepglobe_stats = ([0.4085, 0.3795, 0.2823], [0.1447, 0.1123, 0.1023]) # manually calculated - data_evaluation.py
+    deepglobe_stats = ([0.3990, 0.3779, 0.2866], [0.1539, 0.1203, 0.1129]) # manually calculated - data_evaluation.py
 
     # default transformations
     if not transformations:
