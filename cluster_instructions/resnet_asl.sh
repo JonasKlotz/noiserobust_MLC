@@ -38,7 +38,7 @@ for m in ${model[@]}; do
 	for l in ${loss[@]}; do
 		for o in ${optim[@]}; do
 				for lr in ${learning_rates[@]}; do
-				  no_noise="-model ${m} -loss ${l} -optim ${o} -d_model ${d} -lr ${lr}"
+				  no_noise="-model ${m} -loss ${l} -optim ${o} -lr ${lr}"
             python3 src/main.py $no_noise
 						for n in ${noises[@]}; do
               add_noise="-model ${m} -loss ${l} -optim ${o} -lr ${lr} -add_noise ${n}"

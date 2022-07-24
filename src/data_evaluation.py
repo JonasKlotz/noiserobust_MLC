@@ -121,6 +121,7 @@ def get_loss_weights(data_loader):
         else:
             labels_sum += torch.sum(labels, dim=0)
         num_samples += labels.shape[0]
+    print(labels_sum)
     pos_weights = (num_samples-labels_sum) / labels_sum  # Divide negative samples through positive samples
     return pos_weights
 
