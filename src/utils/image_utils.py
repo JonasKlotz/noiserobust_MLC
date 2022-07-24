@@ -135,7 +135,7 @@ def plot_multilabel_confusion_matrices(conf_mats, class_names, dir_name="", epoc
     :param title: model name
     :param epoch:
     """
-    fig, ax = plt.subplots(4, 5, figsize=(20, 20))
+    fig, ax = plt.subplots(3, 2, figsize=(20, 20))
     ax = ax.flatten()
     for i in range(len(class_names)):
         plot_confusion_matrix(conf_mats[i], ax[i], class_names[i], ["N", "Y"], epoch)
