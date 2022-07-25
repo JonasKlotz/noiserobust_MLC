@@ -29,7 +29,7 @@ echo Start
 model=("lamp")
 loss=("weighted_bce")
 optim=("sgd")
-d_model=(300)
+d_model=(50)
 learning_rates=(0.001)
 noises=(0.1 0.3 0.5 0.7)
 
