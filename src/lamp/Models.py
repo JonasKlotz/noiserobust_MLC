@@ -106,7 +106,7 @@ class LAMP(nn.Module):
         enc_output = self.encoder(src)
 
         src_seq = src.view(batch_size, -1) # reshape our image into a flat vector
-        # apparently dec accepts sources only in a 2d shape with batchsize and pixels????
+        # apparently dec accepts sources only in a 2d shape with batchsize and pixels
         dec_output, *dec_output2 = self.decoder(src_seq, enc_output, return_attns=return_attns,
                                                 int_preds=int_preds)
 
