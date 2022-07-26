@@ -239,11 +239,11 @@ def load_word_embeddings( dim, labels,data_path= "data/glove", name="deepglobe")
         return G_dict[labels]
 
 if __name__ == '__main__':
-    G_dict = Glove(dim=300)  # Download = True can can take long
+    G_dict = Glove(dim=200, load_from_txt=True)  # Download = True can can take long
     # print(G_dict["nichtdrinne"])
 
     labels = ["urban", "agriculture", "rangeland", "forest", "water", "barren", "unknown"]
-    G_dict.save_word_embeddings(words=labels, )
+    G_dict.save_word_embeddings(words=labels)
     #label_mapping = {idx: l for idx, l in enumerate(labels)}
     n = len(labels)
     res = (G_dict[labels])
