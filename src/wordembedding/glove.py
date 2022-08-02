@@ -192,12 +192,17 @@ class Glove:
         plt.show()
 
     def save_word_embeddings(self, words, name="deepglobe"):
-        res  = self[words]
+        res = self[words]
         with open(f'{self.data_path}/{name}_labels_d{str(self.dim)}.npy', 'wb') as f:
             np.save(f, res)
 
+    def reduce_vector_dimension(self, d=10):
+        tsne = TSNE(n_components=d, random_state=0, init='pca', learning_rate='auto', method='exact' )
+        self.vectors = tsne.fit_transform(self.vectors)
+
 
 import networkx as nx
+
 
 def plot_edge_matrix(edge_matrix, label_mapping):
     G = nx.from_numpy_matrix(edge_matrix)
@@ -207,7 +212,7 @@ def plot_edge_matrix(edge_matrix, label_mapping):
     esmall = [(u, v) for (u, v, d) in G.edges(data=True) if d["weight"] <= 7]
 
     pos = nx.circular_layout(G)  # positions for all nodes - seed for reproducibility
-    #pos = nx.kamada_kawai_layout(G)  # positions for all nodes - seed for reproducibility
+    # pos = nx.kamada_kawai_layout(G)  # positions for all nodes - seed for reproducibility
     fig = plt.figure(figsize=(10, 10))
     # nodes
     nx.draw_networkx_nodes(G, pos, node_size=4000)
@@ -231,20 +236,24 @@ def plot_edge_matrix(edge_matrix, label_mapping):
     plt.show()
     fig.savefig('waka.svg')
 
-def load_word_embeddings( dim, labels,data_path= "data/glove", name="deepglobe"):
+
+def load_word_embeddings(dim, labels, data_path="data/glove", name="deepglobe"):
     try:
         return np.load(f'{data_path}/{name}_labels_d{str(dim)}.npy')
     except:
         G_dict = Glove(dim=dim)
         return G_dict[labels]
 
+
 if __name__ == '__main__':
-    G_dict = Glove(dim=200, load_from_txt=True)  # Download = True can can take long
+    G_dict = Glove(dim=50, load_from_txt=True)  # Download = True can can take long
     # print(G_dict["nichtdrinne"])
+
+    G_dict.reduce_vector_dimension(d=15) # reduce embedded space of the vectors
 
     labels = ["urban", "agriculture", "rangeland", "forest", "water", "barren", "unknown"]
     G_dict.save_word_embeddings(words=labels)
-    #label_mapping = {idx: l for idx, l in enumerate(labels)}
+    # label_mapping = {idx: l for idx, l in enumerate(labels)}
     n = len(labels)
     res = (G_dict[labels])
     # edge_matrix = np.zeros((n, n))
