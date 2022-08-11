@@ -29,8 +29,8 @@ echo Start
 model=("CbMLC")
 loss=("asl")
 optim=("sgd")
-d_model=(50 300)
-learning_rates=(0.001  0.005)
+d_model=(50)
+learning_rates=(0.001)
 noises=(0.1 0.3 0.5 0.7)
 
 

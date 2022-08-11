@@ -109,6 +109,7 @@ def get_mean_std(data_loader):
     std = (channels_squared_sum/num_batches - mean**2)**0.5
     return mean, std
 
+
 def get_loss_weights(data_loader):
     """
     calculates the neg/pos ratio for each class ( #negative_l ist the amount of samples where label l is not present)
@@ -121,10 +122,26 @@ def get_loss_weights(data_loader):
         else:
             labels_sum += torch.sum(labels, dim=0)
         num_samples += labels.shape[0]
+    print(labels_sum)
     pos_weights = (num_samples-labels_sum) / labels_sum  # Divide negative samples through positive samples
     return pos_weights
 
 
+def plot_distribution_from_dataloader(data_loader):
+    """
+    calculates the neg/pos ratio for each class ( #negative_l ist the amount of samples where label l is not present)
+    used to weight loss functions like BCE with the pos_weight parameter
+    """
+    num_samples = 0
+    for _, labels in data_loader:
+        if num_samples == 0:
+            labels_sum = torch.sum(labels, dim=0)
+        else:
+            labels_sum += torch.sum(labels, dim=0)
+        num_samples += labels.shape[0]
+
+    plt.bar(np.arange(6), labels_sum)
+    plt.show()
 
 if __name__ == '__main__':
     # get_labels_from_deepglobe()
@@ -139,8 +156,10 @@ if __name__ == '__main__':
         transforms.Resize(224),
         transforms.ToTensor(),
     ])
-    train_data, valid_data, test_data, labels = load_data_from_lmdb(transformations=transformations)
-    print(labels)
-    print("loss_weights: ", get_loss_weights(train_data))
-    print("mean and std: ", get_mean_std(train_data))
+    train_data, valid_data, test_data, labels = load_data_from_lmdb(transformations=transformations,)
+    # print(labels)
+    # print("loss_weights: ", get_loss_weights(train_data))
+    # print("mean and std: ", get_mean_std(train_data))
+    plot_distribution_from_dataloader(train_data)
+
 

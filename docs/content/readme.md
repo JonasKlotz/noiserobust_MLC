@@ -15,6 +15,5 @@ Place it in the project with the path `data/deepglobe`. Then run the patch-sampl
 The most important parameters are contained in this exemplary run.
 For all parameters check out `src/config_args.py`, for our parameterized runs check out `cluster_instructions/<model>_<loss>.sh`
 
-	s
 `python main.py -model CbMLC -loss weighted_bce -optim sgd -d_model 50-lr 0.0001 -add_noise 0.1 -sub_noise 0.1`
 

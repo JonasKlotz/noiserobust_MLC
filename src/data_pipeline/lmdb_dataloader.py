@@ -47,6 +47,8 @@ class LMDBLoader(Dataset):
         self.keys = [key.decode('ascii') for key, _ in self.txn.cursor()]
         print(f"LMDB Initialized - Len: {self.len} - NOISE: {self.add_noise}/{self.sub_noise}")
 
+        self._get_label_indexes()
+
     def _get_label_indexes(self):
         """ Function that returns all present indexes for every label in the dataset and the indexes for the noise """
 
@@ -75,9 +77,6 @@ class LMDBLoader(Dataset):
 
     def _noisify_label(self, onehot_labels, index):
         """ Function that adds noise to a single images labels array (one-hot), using class attributes """
-
-        if self.label_indexes is None:
-            self._get_label_indexes()
 
         # iterate over all labels in the array
         for i, label_value in enumerate(onehot_labels):
@@ -172,7 +171,7 @@ def load_data_from_lmdb(data_dir="data/deepglobe_patches/", transformations=None
 
     # mean and std values of the Imagenet Dataset for other datasets
     # imagenet_stats = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    deepglobe_stats = ([0.4085, 0.3795, 0.2823], [0.1447, 0.1123, 0.1023]) # manually calculated - data_evaluation.py
+    deepglobe_stats = ([0.3990, 0.3779, 0.2866], [0.1539, 0.1203, 0.1129]) # manually calculated - data_evaluation.py
 
     # default transformations
     if not transformations:

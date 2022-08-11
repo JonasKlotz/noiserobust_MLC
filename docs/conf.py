@@ -48,8 +48,10 @@ sys.path.insert(
 sys.path.insert(
     0, os.path.abspath(os.path.join('../', 'src', 'lamp'))
 )
-
-
+sys.path.insert(
+    0, os.path.abspath(os.path.join('../', 'src',))
+)
+print(sys.path)
 
 
 # -- Project information -----------------------------------------------------
@@ -62,7 +64,7 @@ author = "Jonas Klotz"
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon", "sphinx.ext.autosummary"]
+extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon", "myst_parser"]
 autosummary_generate = True  # Turn on sphinx.ext.autosummary
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -73,7 +75,7 @@ templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # mock import that sphinx recognizes them
-MOCK_MODULES = ['numpy', 'pandas', 'pyarrow', 'torch', 'torch.nn' 'torchvision']
+MOCK_MODULES = ['numpy', 'pandas', 'pyarrow']
 
 sys.modules.update((mod_name, ModuleMock()) for mod_name in MOCK_MODULES)
 
@@ -146,13 +148,3 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
 
-# Markdown support
-
-from recommonmark.parser import CommonMarkParser
-
-# The suffix of source filenames.
-source_suffix = ['.rst', '.md']
-
-source_parsers = {
-    '.md': CommonMarkParser,
-}

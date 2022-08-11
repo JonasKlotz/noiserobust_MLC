@@ -12,7 +12,7 @@ from utils.log import MetricTracker, calculate_metrics, CSV_logger
 warnings.filterwarnings("ignore")
 
 
-def run_model(model, train_data, valid_data, test_data, crit, optimizer, scheduler, opt):
+def run_model(model, train_data, valid_data, test_data, crit, optimizer, scheduler, opt, class_names=None):
     """
     Run training for the model using the given parameters
 
@@ -59,7 +59,7 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
         results_file_logger.write_csv([miF1, maF1, miAP, maAP, test_loss], new_line=True)
 
         save_confusion_matrix(all_targets, threshed_predictions, dir_name=opt.model_name,
-                              epoch=epoch_i, every_nth_epoch=10)
+                              epoch=epoch_i, every_nth_epoch=25, class_names=class_names)
 
         utils.save_model(opt, epoch_i, model, valid_loss, valid_losses)
 

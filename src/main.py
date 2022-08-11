@@ -106,7 +106,7 @@ def main(opt):
         # pos_weight_old = torch.tensor([5.8611238, 1.21062702, 5.82371649, 9.89122553,
         #                            14.41991786, 9.75859599])  # for random deepglobe sampling
 
-        pos_weight = torch.tensor([3.1611, 0.6420, 3.3197, 4.9475, 8.9695, 5.1701])
+        pos_weight = torch.tensor([1.9643, 1.1112, 2.0769, 3.4269, 6.2885, 3.6217])
 
         crit = nn.BCEWithLogitsLoss(reduction='mean', pos_weight=pos_weight)
     else:
@@ -135,7 +135,7 @@ def main(opt):
         print("============== Start Training ======================")
         start_time = datetime.now()
         run_model(model=model, train_data=train_data, test_data=test_data, valid_data=valid_data, crit=crit,
-                  optimizer=optimizer, scheduler=scheduler, opt=opt)
+                  optimizer=optimizer, scheduler=scheduler, opt=opt, class_names=labels)
         end_time = datetime.now()
         print(f"Total time taken: {end_time - start_time}")
 

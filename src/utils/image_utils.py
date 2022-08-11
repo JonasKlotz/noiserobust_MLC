@@ -135,12 +135,14 @@ def plot_multilabel_confusion_matrices(conf_mats, class_names, dir_name="", epoc
     :param title: model name
     :param epoch:
     """
-    fig, ax = plt.subplots(4, 5, figsize=(20, 20))
+    rows = 3
+    cols = 2
+    fig, ax = plt.subplots(rows, cols, figsize=(20, 20))
     ax = ax.flatten()
     for i in range(len(class_names)):
         plot_confusion_matrix(conf_mats[i], ax[i], class_names[i], ["N", "Y"], epoch)
 
-    for i in range(len(class_names), 4 * 5):
+    for i in range(len(class_names), rows*cols):
         ax[i].axis('off')
     fig.tight_layout()
     fig.savefig(dir_name + f"/CM_epoch_{epoch}.png")

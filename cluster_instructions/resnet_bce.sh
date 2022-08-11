@@ -29,7 +29,7 @@ echo Start
 model=("resnet_base")
 loss=("bce")
 optim=("sgd")
-learning_rates=(0.001  0.005)
+learning_rates=(0.001)
 noises=(0.1 0.3 0.5 0.7)
 
 
@@ -38,10 +38,10 @@ for m in ${model[@]}; do
 	for l in ${loss[@]}; do
 		for o in ${optim[@]}; do
 				for lr in ${learning_rates[@]}; do
-				  no_noise="-model ${m} -loss ${l} -optim ${o} -d_model ${d} -lr ${lr}"
+				  no_noise="-model ${m} -loss ${l} -optim ${o} -lr ${lr}"
             python3 src/main.py $no_noise
 						for n in ${noises[@]}; do
-              add_noise="-model ${m} -loss ${l} -optim ${o}-lr ${lr} -add_noise ${n}"
+              add_noise="-model ${m} -loss ${l} -optim ${o} -lr ${lr} -add_noise ${n}"
               python3 src/main.py $add_noise
               sub_noise="-model ${m} -loss ${l} -optim ${o} -lr ${lr} -sub_noise ${n}"
               python3 src/main.py $sub_noise
