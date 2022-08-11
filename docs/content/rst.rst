@@ -12,7 +12,7 @@ The main method is structured as follows:
    3. Model Preparation and loading
    4. Optimizer and Loss Setup
    5. CUDA Setup
-   6. Train or Predict
+   6. Training or Predict
 
 
 LAMP
