@@ -1,5 +1,10 @@
 import torch
 import torch.nn as nn
+from torch import linalg as LA
+
+
+def context_based_regularization(opt, model):
+    return opt.gamma * LA.norm(opt.original_word_embedding_matrix - model.decoder.tgt_word_emb.weight)
 
 
 class AsymmetricLoss(nn.Module):

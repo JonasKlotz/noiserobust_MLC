@@ -6,6 +6,7 @@ from tqdm import tqdm
 import utils.utils as utils
 import torch
 
+from losses import context_based_regularization
 from utils.image_utils import save_confusion_matrix
 from utils.log import MetricTracker, calculate_metrics, CSV_logger
 
@@ -88,6 +89,9 @@ def train_epoch(model, train_data, crit, optimizer, opt, epoch):
 
         # loss and backpropagation
         loss = crit(pred, labels)
+        if opt.loss == 'asl' and not opt.model == "resnet_base":
+            loss += context_based_regularization(opt, model)
+
         loss_tracker.update(loss.item(), batch_size)
         loss.backward()
         optimizer.step()
@@ -127,6 +131,8 @@ def test_epoch(model, test_data, crit, opt, description):
             labels = labels.to(torch.float)
             norm_pred = F.sigmoid(pred).data
             loss = crit(pred, labels)
+            if opt.loss == 'asl' and not opt.model == "resnet_base":
+                loss += context_based_regularization(opt, model)
             loss_tracker.update(loss.item(), batch_size)
             start_idx, end_idx = (batch_idx * batch_size), ((batch_idx + 1) * batch_size)
             all_predictions[start_idx:end_idx] = norm_pred

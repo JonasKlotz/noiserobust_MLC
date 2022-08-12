@@ -15,7 +15,7 @@ from lamp.Models import LAMP, ResnetBaseLine
 from config_args import config_args, get_args
 from training import run_model
 import numpy as np
-import os
+from copy import deepcopy
 from predict import predict
 from datetime import datetime
 from losses import AsymmetricLoss
@@ -58,17 +58,20 @@ def main(opt):
     else:
         if opt.model == "lamp":
             # load node embeddings from gauss distribution
-            weights_matrix = torch.FloatTensor(np.random.normal(scale=0.6, size=(opt.tgt_vocab_size, opt.d_model)))
+            opt.word_embedding_matrix = torch.FloatTensor(np.random.normal(scale=0.6, size=(opt.tgt_vocab_size, opt.d_model)))
         else:
             # load node embeddings from glove
             try:
-                weights_matrix = torch.from_numpy(
+                opt.word_embedding_matrix = torch.from_numpy(
                     load_word_embeddings(data_path=opt.embedded_weights_path, dim=opt.d_model, labels=labels)) \
                     .to(torch.float32)
+
             except FileNotFoundError as e:
                 print(f"ERROR: Glovefile not found {e}\n"
                       f"defaulting to normal distributed weights")
-                weights_matrix = torch.FloatTensor(np.random.normal(scale=0.6, size=(opt.tgt_vocab_size, opt.d_model)))
+                opt.word_embedding_matrix = torch.FloatTensor(np.random.normal(scale=0.6, size=(opt.tgt_vocab_size, opt.d_model)))
+        # copy embedings for regularization
+        opt.original_word_embedding_matrix = deepcopy(opt.word_embedding_matrix)
 
         model = LAMP(opt.tgt_vocab_size, opt.max_token_seq_len_d, n_layers_dec=opt.n_layers_dec, n_head=opt.n_head,
                      n_head2=opt.n_head2, d_word_vec=opt.d_model, d_model=opt.d_model, d_inner_hid=opt.d_inner_hid,
@@ -77,7 +80,7 @@ def main(opt):
                      enc_transform=opt.enc_transform, onehot=opt.onehot, no_dec_self_att=opt.no_dec_self_att,
                      loss=opt.loss,
                      label_adj_matrix=label_adj_matrix, label_mask=opt.label_mask, graph_conv=opt.graph_conv,
-                     attn_type=opt.attn_type, int_preds=opt.int_preds, word2vec_weights=weights_matrix)
+                     attn_type=opt.attn_type, int_preds=opt.int_preds, word2vec_weights=opt.word_embedding_matrix)
 
 
 
