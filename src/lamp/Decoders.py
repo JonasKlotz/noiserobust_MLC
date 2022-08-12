@@ -6,6 +6,9 @@ from lamp import utils
 
 
 class GraphDecoder(nn.Module):
+    """
+    Graph Decoder
+    """
     def __init__(
             self, n_tgt_vocab, n_layers=6, n_head=8, n_head2=8, d_k=64, d_v=64,
             d_word_vec=512, d_model=512, d_inner_hid=1024, dropout=0.1, dropout2=0.1,
@@ -26,8 +29,7 @@ class GraphDecoder(nn.Module):
         if label_adj_matrix is not None:
             for i in range(label_adj_matrix.size(0)):
                 if label_adj_matrix[i].sum().item() < 1:
-                    label_adj_matrix[
-                        i, i] = 1  # This prevents Nan output in attention (otherwise 0 attn weights occurs)
+                    label_adj_matrix[i, i] = 1 # prevents Nan output in attention (otherwise 0 attn weights occurs)
             self.label_mask = utils.swap_0_1(label_adj_matrix, 1, 0).unsqueeze(0)
         else:
             if label_mask == 'inveye':

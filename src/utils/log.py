@@ -52,6 +52,9 @@ class MetricTracker(object):
 
 
 def calculate_metrics(y_true, y_pred, y_pred_threshed):
+    """
+    Calculate  both micro and macro fr F1 and mAP
+    """
     mif1 = round(f1_score(y_true=y_true, y_pred=y_pred_threshed, average='micro'), 3)
     maf1 = round(f1_score(y_true=y_true, y_pred=y_pred_threshed, average='macro'), 3)
     miMAP = round(average_precision_score(y_true=y_true, y_score=y_pred, average='micro'), 3)

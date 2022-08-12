@@ -22,6 +22,7 @@ def predict(model, dataloader, label_names, crit, weights_path="/model.chkpt", n
     print(f"================= PREDICT ==============")
     checkpoint = torch.load(weights_path)
     model.load_state_dict(checkpoint['model'])
+    model.eval()
 
     ################# predict #################
     batch = next(iter(dataloader))
@@ -55,6 +56,7 @@ def evaluate(model, dataloader, label_names, crit, opt, weights_path="/model.chk
     print(f"================= Evaluate ==============")
     checkpoint = torch.load(weights_path)
     model.load_state_dict(checkpoint['model'])
+    model.eval()
 
     results_file_logger = CSV_logger(file_name="results", dir_name=opt.model_name)
 

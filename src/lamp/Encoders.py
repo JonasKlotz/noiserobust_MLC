@@ -3,6 +3,9 @@ from torchvision import models
 
 
 class RESNETEncoder(nn.Module):
+    """
+    Resnet Encoder ( not included in LAMP)
+    """
     def __init__(
             self, d_model=300,  pretrained=True, resnet_layers=18, freeze= False):
         super(RESNETEncoder, self).__init__()

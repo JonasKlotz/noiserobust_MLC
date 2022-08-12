@@ -79,7 +79,7 @@ def main(opt):
                      label_adj_matrix=label_adj_matrix, label_mask=opt.label_mask, graph_conv=opt.graph_conv,
                      attn_type=opt.attn_type, int_preds=opt.int_preds, word2vec_weights=weights_matrix)
 
-    # print(model)
+
 
     opt.total_num_parameters = int(utils.count_parameters(model))
 

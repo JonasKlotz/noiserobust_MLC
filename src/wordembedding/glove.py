@@ -249,13 +249,20 @@ if __name__ == '__main__':
     G_dict = Glove(dim=50, load_from_txt=True)  # Download = True can can take long
     # print(G_dict["nichtdrinne"])
 
-    G_dict.reduce_vector_dimension(d=15) # reduce embedded space of the vectors
+    #G_dict.reduce_vector_dimension(d=15) # reduce embedded space of the vectors
 
-    labels = ["urban", "agriculture", "rangeland", "forest", "water", "barren", "unknown"]
-    G_dict.save_word_embeddings(words=labels)
-    # label_mapping = {idx: l for idx, l in enumerate(labels)}
-    n = len(labels)
-    res = (G_dict[labels])
+    # labels = ["urban", "agriculture", "rangeland", "forest", "water", "barren", "unknown"]
+    # G_dict.save_word_embeddings(words=labels)
+    # # label_mapping = {idx: l for idx, l in enumerate(labels)}
+    # n = len(labels)
+    # res = (G_dict[labels])
+    agriculture = G_dict["rangeland"]
+    exam  = G_dict["exam"]
+    rangeland = G_dict["forest"]
+
+    print(f"Agri to exam {spatial.distance.euclidean(agriculture, exam) }")
+    print(f"Agri to rangeland {spatial.distance.euclidean(agriculture, rangeland) }")
+
     # edge_matrix = np.zeros((n, n))
     #
     # for i in range(n):

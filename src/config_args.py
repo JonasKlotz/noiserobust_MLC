@@ -8,7 +8,7 @@ def get_args(parser):
     ################  PARAMETERS WE CHANGE ##################################
     parser.add_argument('-dataset', type=str, default='deepglobe')
     parser.add_argument('-epoch', type=int, default=50)
-    parser.add_argument('-d_model', type=int, default=300) # glove vector size
+    parser.add_argument('-d_model', type=int, default=50)  # glove vector size
     parser.add_argument('-model', type=str, choices=['CbMLC', 'resnet_base', 'lamp'], default='CbMLC')
     parser.add_argument('-lr', type=float, default=0.0002)
     parser.add_argument('-loss', type=str, choices=['asl', 'bce', 'weighted_bce'], default='bce')
@@ -16,8 +16,8 @@ def get_args(parser):
     parser.add_argument('-optim', type=str, choices=['adam', 'sgd'], default='adam')
     parser.add_argument('-dataset_path', default='data/deepglobe_patches/')
     parser.add_argument('-embedded_weights_path', default='data/glove')
-    parser.add_argument('-add_noise',type=float, default=0.0)
-    parser.add_argument('-sub_noise',type=float, default=0.0)
+    parser.add_argument('-add_noise', type=float, default=0.0)
+    parser.add_argument('-sub_noise', type=float, default=0.0)
 
     ################ CONSTANT PARAMETERS ##################################
     parser.add_argument('-dataroot', type=str, default='data/')
@@ -105,11 +105,8 @@ def config_args(opt):
     else:
         opt.dec_dropout2 = False
 
-
-
     opt.cuda = not opt.no_cuda
     opt.d_word_vec = opt.d_model
-
 
     opt.binary_relevance = True
 

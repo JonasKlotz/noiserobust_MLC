@@ -65,6 +65,9 @@ def run_model(model, train_data, valid_data, test_data, crit, optimizer, schedul
 
 
 def train_epoch(model, train_data, crit, optimizer, opt, epoch):
+    """
+    Train for 1 Epoch
+    """
     model.train()
 
     out_len = (opt.tgt_vocab_size)
@@ -102,6 +105,9 @@ def train_epoch(model, train_data, crit, optimizer, opt, epoch):
 
 
 def test_epoch(model, test_data, crit, opt, description):
+    """
+    Test Epoch
+    """
     # setup
     model.eval()
     out_len = opt.tgt_vocab_size

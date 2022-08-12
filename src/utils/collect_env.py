@@ -1,8 +1,8 @@
 from __future__ import print_function
 
-# Unlike the rest of the PyTorch this file must be python2 compliant.
-# This script outputs relevant system environment info
-# Run it with `python collect_env.py`.
+"""
+This collects all necessary System and CUDA information, used to debug torch and CUDA on the cluster
+"""
 import datetime
 import locale
 import re
