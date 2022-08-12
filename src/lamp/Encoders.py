@@ -28,7 +28,6 @@ class RESNETEncoder(nn.Module):
 
         self.model.fc = nn.Linear(num_ftrs, d_model) # out features are model dim
 
-
     def forward(self, img):
         x = self.model(img)
         output = x.view(img.size(0), 1, -1) # why this transformation??

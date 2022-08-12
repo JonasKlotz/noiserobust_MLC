@@ -1,18 +1,10 @@
 import torch
 import torch.nn as nn
 from torchvision import models
-import torch.nn.functional as F
-import numpy as np
-import lamp.Constants as Constants
-from lamp.Layers import EncoderLayer, DecoderLayer
-from lamp.SubLayers import ScaledDotProductAttention
-from lamp.SubLayers import PositionwiseFeedForward
 from lamp.SubLayers import XavierLinear
 from lamp.Encoders import RESNETEncoder
 from lamp.Decoders import GraphDecoder
-from pdb import set_trace as stop
-from lamp import utils
-import copy
+
 
 
 class LAMP(nn.Module):
@@ -22,31 +14,7 @@ class LAMP(nn.Module):
                  no_dec_self_att=False, loss='ce', label_adj_matrix=None, label_mask=None, graph_conv=False,
                  attn_type='softmax', int_preds=False, word2vec_weights: torch.FloatTensor = None, freeze_emb=False):
         """
-
-        @param n_tgt_vocab:
-        @param n_max_seq_d:
-        @param n_layers_dec:
-        @param n_head:
-        @param n_head2:
-        @param d_word_vec:
-        @param d_model:
-        @param d_inner_hid:
-        @param d_k:
-        @param d_v:
-        @param dec_dropout:
-        @param dec_dropout2:
-        @param proj_share_weight:
-        @param encoder:
-        @param decoder:
-        @param enc_transform:
-        @param onehot:
-        @param no_dec_self_att:
-        @param loss:
-        @param label_adj_matrix: This matrix contains the graph edges in out case a full matrix
-        @param label_mask:
-        @param graph_conv:
-        @param attn_type:
-        @param int_preds:
+                Main Model
         """
 
         super(LAMP, self).__init__()

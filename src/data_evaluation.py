@@ -109,6 +109,7 @@ def get_mean_std(data_loader):
     std = (channels_squared_sum/num_batches - mean**2)**0.5
     return mean, std
 
+
 def get_loss_weights(data_loader):
     """
     calculates the neg/pos ratio for each class ( #negative_l ist the amount of samples where label l is not present)
@@ -124,6 +125,7 @@ def get_loss_weights(data_loader):
     print(labels_sum)
     pos_weights = (num_samples-labels_sum) / labels_sum  # Divide negative samples through positive samples
     return pos_weights
+
 
 def plot_distribution_from_dataloader(data_loader):
     """
