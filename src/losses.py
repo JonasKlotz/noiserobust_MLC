@@ -4,7 +4,11 @@ from torch import linalg as LA
 
 
 def context_based_regularization(opt, model):
-    return opt.gamma * LA.norm(opt.original_word_embedding_matrix - model.decoder.tgt_word_emb.weight)
+    if torch.cuda.is_available() and opt.cuda:
+        return opt.gamma * LA.norm(opt.original_word_embedding_matrix - model.decoder.tgt_word_emb.weight).cuda()
+    else:
+        return opt.gamma * LA.norm(opt.original_word_embedding_matrix - model.decoder.tgt_word_emb.weight)
+
 
 
 class AsymmetricLoss(nn.Module):
