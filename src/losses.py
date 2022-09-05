@@ -4,7 +4,6 @@ from torch import linalg as LA
 
 
 def context_based_regularization(opt, model):
-    print(f"gamma {opt.gamma.is_cuda} {opt.original_word_embedding_matrix.is_cuda} {model.decoder.tgt_word_emb.weight.is_cuda}")
     if torch.cuda.is_available() and opt.cuda:
         return torch.tensor(opt.gamma).cuda() * LA.norm(opt.original_word_embedding_matrix.cuda() - model.decoder.tgt_word_emb.weight.cuda()).cuda()
     else:
